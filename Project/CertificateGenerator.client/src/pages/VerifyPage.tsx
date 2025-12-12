@@ -101,7 +101,7 @@ export default function VerifyPage() {
             </>
           ) : (
             <>
-              <div className="verify-icon">❌</div>
+              <div className="verify-icon"></div>
               <h1 style={{ color: "var(--danger)" }}>Invalid Certificate</h1>
               <p className="subtitle">{error}</p>
             </>

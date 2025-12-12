@@ -84,7 +84,7 @@ export default function BulkUpload() {
               overflow: "auto",
             }}
           >
-            {`Name,Course,Completion Date,
+            {`Name,Course,Completion Date,Email(Optional)
 Chirag Yadav,Full Stack Development,2026-01-15,chirag@gmail.com
 Shrikant Khade,Full Stack Development,2026-01-15,shrikant@gmail.com`}
           </pre>
