@@ -27,7 +27,7 @@ export interface BulkStudentData {
     completion_date: string;
 }
 
-/**
+/*
  * Everything the PDF generator needs to create a certificate.
  * This bundles together the certificate data, the template image,
  * and all the positioned fields with their styling.
@@ -56,5 +56,6 @@ export interface CertificateData {
         is_bold: boolean;
         is_italic: boolean;
         text_align: string;          // "left", "center", or "right"
+        default_value?: string;      // Default/preview value for custom fields
     }>;
 }

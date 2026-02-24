@@ -15,6 +15,7 @@ interface Field {
   is_bold: boolean;
   is_italic: boolean;
   text_align: string;
+  default_value?: string;
 }
 
 interface Template {
@@ -105,6 +106,7 @@ export default function TemplateDesigner() {
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(
     null,
   );
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [fields, setFields] = useState<Field[]>([]);
   const [selectedField, setSelectedField] = useState<Field | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -194,6 +196,19 @@ export default function TemplateDesigner() {
           position_y: f.position_y ?? 50,
         })),
       );
+
+      // Populate preview values from loaded fields' default_value
+      const previews: Record<string, string> = {
+        student_name: "",
+        course_name: "",
+        completion_date: "",
+      };
+      loadedFields.forEach((f: any) => {
+        if (f.default_value) {
+          previews[f.field_type] = f.default_value;
+        }
+      });
+      setPreviewValues(previews);
 
       setPreviewCertId(loadedTemplate.preview_certificate_id || "");
       setPreviewVerifCode(loadedTemplate.preview_verification_code || "");
@@ -376,14 +391,21 @@ export default function TemplateDesigner() {
       console.log(
         `[Designer] Saving fields with canvas: ${displayWidth}x${displayHeight}`,
       );
-      fields.forEach((f) => {
+
+      // Merge preview values into fields as default_value
+      const fieldsWithDefaults = fields.map((f) => ({
+        ...f,
+        default_value: previewValues[f.field_type] || f.default_value,
+      }));
+
+      fieldsWithDefaults.forEach((f) => {
         console.log(
-          `  -> ${f.field_type}: (${f.position_x.toFixed(1)}, ${f.position_y.toFixed(1)}) size=${f.font_size}`,
+          `  -> ${f.field_type}: (${f.position_x.toFixed(1)}, ${f.position_y.toFixed(1)}) size=${f.font_size}${f.default_value ? ` default="${f.default_value}"` : ""}`,
         );
       });
 
       const res = await api.put(`/templates/${selectedTemplate.id}/fields`, {
-        fields,
+        fields: fieldsWithDefaults,
         canvas_width: displayWidth,
         canvas_height: displayHeight,
       });
@@ -409,6 +431,14 @@ export default function TemplateDesigner() {
         "success",
         `Fields saved! New IDs — Certificate: ${newCertId}, Verification: ${newVerifCode}`,
       );
+
+      // Update fields with the default_value to persist preview values
+      setFields((prev) =>
+        prev.map((f) => ({
+          ...f,
+          default_value: previewValues[f.field_type] || f.default_value,
+        })),
+      );
     } catch (err: any) {
       const msg = err?.response?.data?.error || "Failed to save fields.";
       showToast("error", msg);
@@ -428,12 +458,168 @@ export default function TemplateDesigner() {
 
   return (
     <div className="page">
-      <div className="page-header">
+      <div className="page-header-template">
         <h1>Template Designer</h1>
-        <p>
-          Upload a certificate image, add fields, and position them on the
-          template
-        </p>
+
+        <button className="btn " onClick={() => setIsModalOpen(true)}>
+          Template
+        </button>
+        {isModalOpen && (
+          <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+            <div className="modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-content">
+                {/* Upload */}
+                <div className="card">
+                  <h3 style={{ marginBottom: "12px", fontSize: "0.95rem" }}>
+                    Upload Template
+                  </h3>
+                  <div className="input-group" style={{ marginBottom: "12px" }}>
+                    <input
+                      className="input"
+                      placeholder="Template name"
+                      value={templateName}
+                      onChange={(e) => setTemplateName(e.target.value)}
+                    />
+                  </div>
+                  <div
+                    className="upload-area"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <span style={{ fontSize: "2rem" }}></span>
+                    <p
+                      style={{
+                        fontSize: "0.85rem",
+                        color: "var(--text-secondary)",
+                        marginTop: "8px",
+                      }}
+                    >
+                      {uploading ? "Uploading..." : "Click to upload PNG/JPG"}
+                    </p>
+                  </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".png,.jpg,.jpeg"
+                    hidden
+                    onChange={handleUpload}
+                  />
+                </div>
+
+                {/* Template list */}
+                {templates.length > 0 && (
+                  <div className="card">
+                    <h3 style={{ marginBottom: "12px", fontSize: "0.95rem" }}>
+                      Your Templates
+                    </h3>
+                    <div className="field-list">
+                      {templates.map((t) => (
+                        <div
+                          key={t.id}
+                          className={`field-item ${selectedTemplate?.id === t.id ? "selected" : ""}`}
+                          onClick={() => loadTemplate(t)}
+                        >
+                          <span
+                            style={{
+                              flex: 1,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {t.name}
+                          </span>
+                          <button
+                            onClick={(e) => deleteTemplate(e, t.id, t.name)}
+                            title={`Delete ${t.name}`}
+                            style={{
+                              background: "none",
+                              border: "none",
+                              cursor: "pointer",
+                              padding: "2px 6px",
+                              borderRadius: "var(--radius-sm)",
+                              fontSize: "0.85rem",
+                              color: "var(--text-muted)",
+                              transition: "all 0.2s ease",
+                              flexShrink: 0,
+                            }}
+                            onMouseEnter={(e) => {
+                              (e.target as HTMLElement).style.color = "#ef4444";
+                              (e.target as HTMLElement).style.background =
+                                "rgba(239, 68, 68, 0.1)";
+                            }}
+                            onMouseLeave={(e) => {
+                              (e.target as HTMLElement).style.color = "red";
+                              (e.target as HTMLElement).style.background =
+                                "none";
+                            }}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {/* Add Fields */}
+                {selectedTemplate && (
+                  <div className="card">
+                    <h3 style={{ marginBottom: "12px", fontSize: "0.95rem" }}>
+                      Add Fields
+                    </h3>
+                    <div className="field-list">
+                      {FIELD_TYPES.map((ft) => {
+                        const isAdded = fields.some(
+                          (f) => f.field_type === ft.type,
+                        );
+                        return (
+                          <div
+                            key={ft.type}
+                            className={`field-item ${isAdded ? "selected" : ""}`}
+                            onClick={() =>
+                              !isAdded && addField(ft.type, ft.label)
+                            }
+                            style={
+                              isAdded
+                                ? {
+                                    opacity: 0.6,
+                                    cursor: "default",
+                                  }
+                                : {}
+                            }
+                          >
+                            <span>{ft.label}</span>
+                            {isAdded ? (
+                              <span
+                                onClick={() => selectedField && removeField(selectedField.id)}
+                                style={{
+                                  color: "var(--primary-light)",
+                                  fontSize: "0.8rem",
+                                }}
+                              >
+                                Remove
+                              </span>
+                            ) : (
+                              <span
+                                style={{
+                                  color: "#046429",
+                                }}
+                              >
+                                ADD
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                <button className="btn" onClick={() => setIsModalOpen(false)}>
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {toast && (
@@ -443,199 +629,50 @@ export default function TemplateDesigner() {
       <div className="designer-container">
         {/* Sidebar */}
         <div className="designer-sidebar">
-          {/* Upload */}
-          <div className="card">
-            <h3 style={{ marginBottom: "12px", fontSize: "0.95rem" }}>
-              Upload Template
-            </h3>
-            <div className="input-group" style={{ marginBottom: "12px" }}>
-              <input
-                className="input"
-                placeholder="Template name"
-                value={templateName}
-                onChange={(e) => setTemplateName(e.target.value)}
-              />
-            </div>
-            <div
-              className="upload-area"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <span style={{ fontSize: "2rem" }}></span>
-              <p
-                style={{
-                  fontSize: "0.85rem",
-                  color: "var(--text-secondary)",
-                  marginTop: "8px",
-                }}
-              >
-                {uploading ? "Uploading..." : "Click to upload PNG/JPG"}
-              </p>
-            </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".png,.jpg,.jpeg"
-              hidden
-              onChange={handleUpload}
-            />
-          </div>
-
-          {/* Template list */}
-          {templates.length > 0 && (
-            <div className="card">
-              <h3 style={{ marginBottom: "12px", fontSize: "0.95rem" }}>
-                Your Templates
-              </h3>
-              <div className="field-list">
-                {templates.map((t) => (
-                  <div
-                    key={t.id}
-                    className={`field-item ${selectedTemplate?.id === t.id ? "selected" : ""}`}
-                    onClick={() => loadTemplate(t)}
-                  >
-                    <span
-                      style={{
-                        flex: 1,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {t.name}
-                    </span>
-                    <button
-                      onClick={(e) => deleteTemplate(e, t.id, t.name)}
-                      title={`Delete ${t.name}`}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        padding: "2px 6px",
-                        borderRadius: "var(--radius-sm)",
-                        fontSize: "0.85rem",
-                        color: "var(--text-muted)",
-                        transition: "all 0.2s ease",
-                        flexShrink: 0,
-                      }}
-                      onMouseEnter={(e) => {
-                        (e.target as HTMLElement).style.color = "#ef4444";
-                        (e.target as HTMLElement).style.background =
-                          "rgba(239, 68, 68, 0.1)";
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.target as HTMLElement).style.color = "red";
-                        (e.target as HTMLElement).style.background = "none";
-                      }}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* Add Fields */}
           {selectedTemplate && (
             <div className="card">
               <h3 style={{ marginBottom: "12px", fontSize: "0.95rem" }}>
-                Add Fields
+                Add Text
               </h3>
-              <div className="field-list">
-                {FIELD_TYPES.map((ft) => {
-                  const isAdded = fields.some((f) => f.field_type === ft.type);
-                  return (
-                    <div
-                      key={ft.type}
-                      className={`field-item ${isAdded ? "selected" : ""}`}
-                      onClick={() => !isAdded && addField(ft.type, ft.label)}
-                      style={
-                        isAdded
-                          ? {
-                            opacity: 0.6,
-                            cursor: "default",
-                          }
-                          : {}
-                      }
-                    >
-                      <span>{ft.label}</span>
-                      {isAdded ? (
-                        <span
-                          style={{
-                            color: "#046429",
-                            fontSize: "0.8rem",
-                          }}
-                        >
-                          ✓ Added
-                        </span>
-                      ) : (
-                        <span
-                          style={{
-                            color: "var(--primary-light)",
-                          }}
-                        >
-                          +
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
-
-                {!showCustomInput ? (
-                  <div
-                    className="field-item"
-                    onClick={() => setShowCustomInput(true)}
-                    style={{ borderStyle: "dashed" }}
+              {!showCustomInput ? (
+                <div
+                  className="field-item"
+                  onClick={() => setShowCustomInput(true)}
+                  style={{ borderStyle: "dashed" }}
+                >
+                  <span>Custom Text</span>
+                  <span style={{ color: "#046429" }}>ADD</span>
+                </div>
+              ) : (
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "8px",
+                    alignItems: "center",
+                    padding: "4px 0",
+                  }}
+                >
+                  <input
+                    className="input"
+                    placeholder="Field label"
+                    value={customFieldLabel}
+                    onChange={(e) => setCustomFieldLabel(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && addCustomField()}
+                    autoFocus
+                    style={{ flex: 1, fontSize: "0.85rem" }}
+                  />
+                  <button
+                    className="btn "
+                    onClick={addCustomField}
+                    style={{ whiteSpace: "nowrap", fontSize: "0.8rem" }}
                   >
-                    <span>Custom Text</span>
-                    <span style={{ color: "var(--primary-light)" }}>+</span>
-                  </div>
-                ) : (
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "8px",
-                      alignItems: "center",
-                      padding: "4px 0",
-                    }}
-                  >
-                    <input
-                      className="input"
-                      placeholder="Field label"
-                      value={customFieldLabel}
-                      onChange={(e) => setCustomFieldLabel(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && addCustomField()}
-                      autoFocus
-                      style={{ flex: 1, fontSize: "0.85rem" }}
-                    />
-                    <button
-                      className="btn btn-green btn-sm"
-                      onClick={addCustomField}
-                      style={{ whiteSpace: "nowrap", fontSize: "0.8rem" }}
-                    >
-                      Add
-                    </button>
-                    <button
-                      className="btn btn-sm"
-                      onClick={() => {
-                        setShowCustomInput(false);
-                        setCustomFieldLabel("");
-                      }}
-                      style={{
-                        fontSize: "0.8rem",
-                        background: "none",
-                        border: "1px solid var(--border-default)",
-                        color: "var(--text-secondary)",
-                      }}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                )}
-              </div>
+                    Add
+                  </button>
+                </div>
+              )}
             </div>
           )}
-
           {/* Field Data Inputs */}
           {selectedTemplate && fields.length > 0 && (
             <div className="card">
@@ -647,7 +684,7 @@ export default function TemplateDesigner() {
                 style={{
                   display: "flex",
                   flexDirection: "column",
-                  gap: "12px",
+                  gap: "10px",
                 }}
               >
                 {fields.map((field) => {
@@ -793,12 +830,6 @@ export default function TemplateDesigner() {
                   onChange={(e) => updateField("is_italic", e.target.checked)}
                 />
               </div>
-              <button
-                className="btn btn-danger btn-sm"
-                onClick={() => removeField(selectedField.id)}
-              >
-                Remove Field
-              </button>
             </div>
           )}
 
@@ -858,13 +889,13 @@ export default function TemplateDesigner() {
                     }}
                   >
                     {field.field_type.startsWith("custom_text_")
-                      ? (previewValues[field.field_type] || field.label)
+                      ? previewValues[field.field_type] || field.label
                       : getPreviewValue(
-                        field.field_type,
-                        previewValues,
-                        previewCertId,
-                        previewVerifCode,
-                      )}
+                          field.field_type,
+                          previewValues,
+                          previewCertId,
+                          previewVerifCode,
+                        )}
                   </div>
                 ))}
             </div>

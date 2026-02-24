@@ -68,7 +68,7 @@
 html {
   font-size: 16px;
   scroll-behavior: smooth;
-  font-family:Verdana, Geneva, Tahoma, sans-serif;
+  font-family: 'Space Grotesk', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI';
 }
 
 body {
@@ -122,7 +122,7 @@ a:hover {
   content: '';
   position: absolute;
   inset: 0;
-  
+
   opacity: 0;
   transition: opacity var(--transition-fast);
 }
@@ -163,18 +163,18 @@ a:hover {
   background: var(--bg-card);
 }
 
-.btn-create{
+.btn-create {
   background: #726767;
-  color:rgb(255, 255, 255);
-  
+  color: rgb(255, 255, 255);
+
 }
 
-.btn-green{
+.btn-green {
   background-color: #059669;
   color: #ffffff;
 }
 
-.btn-download{
+.btn-download {
   background-color: rgb(67, 113, 211);
   color: #ffffff;
 }
@@ -188,8 +188,8 @@ a:hover {
   box-shadow: var(--shadow-md), 0 0 20px rgba(239, 68, 68, 0.3);
 }
 
-.btn-enable{
-  background:#059669;
+.btn-enable {
+  background: #059669;
   color: white;
 
 }
@@ -218,7 +218,7 @@ a:hover {
 }
 
 .input {
-  padding: 10px 14px;
+  padding: 7px 7px;
   background: var(--bg-input);
   border: 0.5px solid var(--border-default);
   border-radius: var(--radius-md);
@@ -231,7 +231,7 @@ a:hover {
 
 .input:focus {
   border-color: #475569;
-  
+
 }
 
 .input::placeholder {
@@ -243,14 +243,14 @@ a:hover {
   background: #ffffff;
   border: 1px solid var(--border-default);
   border-radius: var(--radius-lg);
-  padding: 24px;
+  padding: 15px;
   transition: all var(--transition-normal);
   box-shadow: var(--shadow-md);
 }
 
 .card:hover {
   border-color: var(--border-hover);
-  
+
 }
 
 /* Badges */
@@ -283,7 +283,7 @@ a:hover {
 /* Page Layout */
 .page {
   flex: 1;
-  padding: 32px;
+  padding: 10px;
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
@@ -291,6 +291,7 @@ a:hover {
 
 .page-header {
   margin-bottom: 32px;
+
 }
 
 .page-header h1 {

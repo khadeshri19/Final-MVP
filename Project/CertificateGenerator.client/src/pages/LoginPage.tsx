@@ -37,12 +37,14 @@ export default function LoginPage() {
         <div className="login-page">
             <div className="login-container">
                 <div className="login-header">
-                    <img src="/assets/sarvarth-logo.jpg" alt="Sarvarth" className="login-logo" />
+                    <img
+                        src="/assets/sarvarth-logo.jpg"
+                        alt="Sarvarth"
+                        className="login-logo"
+                    />
                 </div>
 
                 <form className="login-form" onSubmit={handleSubmit}>
-                    {error && <div className="login-error">{error}</div>}
-
                     <div className="input-row">
                         <input
                             id="email"
@@ -71,8 +73,9 @@ export default function LoginPage() {
                         className="btn-login-custom"
                         disabled={loading || !email || !password}
                     >
-                        {loading ? <span className="spinner" /> : 'Login'}
+                        {loading ? <span className="spinner" /> : "Login"}
                     </button>
+                    {error && <div className="login-error">{error}</div>}
                 </form>
             </div>
         </div>

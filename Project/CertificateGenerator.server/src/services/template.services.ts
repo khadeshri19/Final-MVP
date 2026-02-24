@@ -40,6 +40,7 @@ export const saveTemplateFields = async (id: string, userId: string, fields: any
             is_bold: field.is_bold || false,
             is_italic: field.is_italic || false,
             text_align: field.text_align || 'left',
+            default_value: field.default_value
         };
         insertedFields.push(await templateRepo.addTemplateField(newField));
     }
@@ -71,6 +72,7 @@ export const updateTemplateFields = async (id: string, userId: string, fields: a
             is_bold: field.is_bold || false,
             is_italic: field.is_italic || false,
             text_align: field.text_align || 'left',
+            default_value: field.default_value
         };
         insertedFields.push(await templateRepo.addTemplateField(newField));
     }

@@ -70,6 +70,20 @@ export async function initDb(): Promise<void> {
             END $$;
         `);
 
+        // Add default_value column to template_fields
+        await pool.query(`
+            DO $$ 
+            BEGIN 
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns 
+                    WHERE table_name = 'template_fields' 
+                    AND column_name = 'default_value'
+                ) THEN
+                    ALTER TABLE template_fields ADD COLUMN default_value TEXT;
+                END IF;
+            END $$;
+        `);
+
         console.log('Database tables initialized and verified');
 
         // Seed admin user

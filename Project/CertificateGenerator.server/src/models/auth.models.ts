@@ -1,10 +1,7 @@
 /**
  * auth.models.ts — Authentication Type Definitions
  *
- * These interfaces define the shape of user data throughout the app.
- * "User" is what we store in the database, while "AuthResponse" is
- * the cleaned-up version we send back to the frontend after login
- * (we never send the password hash to the client!).
+
  */
 
 // Represents a user record exactly as it exists in the database

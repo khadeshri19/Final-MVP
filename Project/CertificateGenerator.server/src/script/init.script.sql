@@ -34,7 +34,8 @@ CREATE TABLE IF NOT EXISTS template_fields (
     font_family VARCHAR(50) NOT NULL DEFAULT 'Helvetica',
     is_bold BOOLEAN DEFAULT FALSE,
     is_italic BOOLEAN DEFAULT FALSE,
-    text_align VARCHAR(20) DEFAULT 'left'
+    text_align VARCHAR(20) DEFAULT 'left',
+    default_value TEXT
 );
 
 -- Certificates table

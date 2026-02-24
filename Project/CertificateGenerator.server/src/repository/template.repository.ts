@@ -37,8 +37,8 @@ export const getTemplateFields = async (templateId: string): Promise<TemplateFie
 export const addTemplateField = async (field: TemplateField): Promise<TemplateField> => {
     const result = await pool.query(
         `INSERT INTO template_fields 
-         (template_id, field_type, label, position_x, position_y, font_size, font_color, font_family, is_bold, is_italic, text_align)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+         (template_id, field_type, label, position_x, position_y, font_size, font_color, font_family, is_bold, is_italic, text_align, default_value)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
          RETURNING *`,
         [
             field.template_id,
@@ -52,6 +52,7 @@ export const addTemplateField = async (field: TemplateField): Promise<TemplateFi
             field.is_bold,
             field.is_italic,
             field.text_align,
+            field.default_value || null,
         ]
     );
     return result.rows[0];

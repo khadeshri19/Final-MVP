@@ -23,4 +23,5 @@ export interface TemplateField {
     is_bold: boolean;
     is_italic: boolean;
     text_align: string;
+    default_value?: string;
 }
