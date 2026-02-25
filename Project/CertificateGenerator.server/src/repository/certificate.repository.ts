@@ -7,12 +7,13 @@ export const createCertificate = async (
     studentName: string,
     courseName: string,
     completionDate: string,
-    verificationCode: string
+    verificationCode: string,
+    customData: any = {}
 ): Promise<Certificate> => {
     const result = await pool.query(
-        `INSERT INTO certificates (template_id, user_id, student_name, course_name, completion_date, verification_code)
-         VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-        [templateId, userId, studentName, courseName, completionDate, verificationCode]
+        `INSERT INTO certificates (template_id, user_id, student_name, course_name, completion_date, verification_code, custom_data)
+         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+        [templateId, userId, studentName || null, courseName || null, completionDate || null, verificationCode, JSON.stringify(customData)]
     );
     return result.rows[0];
 };

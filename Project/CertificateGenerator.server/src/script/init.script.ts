@@ -84,6 +84,45 @@ export async function initDb(): Promise<void> {
             END $$;
         `);
 
+        // Add is_static column to template_fields
+        await pool.query(`
+            DO $$ 
+            BEGIN 
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns 
+                    WHERE table_name = 'template_fields' 
+                    AND column_name = 'is_static'
+                ) THEN
+                    ALTER TABLE template_fields ADD COLUMN is_static BOOLEAN DEFAULT FALSE;
+                END IF;
+            END $$;
+        `);
+
+        // Add custom_data column to certificates
+        await pool.query(`
+            DO $$ 
+            BEGIN 
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns 
+                    WHERE table_name = 'certificates' 
+                    AND column_name = 'custom_data'
+                ) THEN
+                    ALTER TABLE certificates ADD COLUMN custom_data JSONB DEFAULT '{}';
+                END IF;
+            END $$;
+        `);
+
+        // Make completion_date nullable (not all templates have a date field)
+        await pool.query(`
+            ALTER TABLE certificates ALTER COLUMN completion_date DROP NOT NULL;
+        `);
+
+        // Make student_name and course_name nullable (templates may not have these)
+        await pool.query(`
+            ALTER TABLE certificates ALTER COLUMN student_name DROP NOT NULL;
+            ALTER TABLE certificates ALTER COLUMN course_name DROP NOT NULL;
+        `);
+
         console.log('Database tables initialized and verified');
 
         // Seed admin user

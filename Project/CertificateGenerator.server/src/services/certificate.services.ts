@@ -12,9 +12,7 @@ export const generateSingleCertificate = async (
     userId: string,
     role: string,
     templateId: string,
-    studentName: string,
-    courseName: string,
-    completionDate: string
+    data: any
 ) => {
     if (role === 'admin') {
         throw new Error('Admins are restricted from generating certificates. Only Users can generate certificates.');
@@ -29,13 +27,19 @@ export const generateSingleCertificate = async (
 
     const verificationCode = uuidv4().split('-')[0].toUpperCase();
 
+    // Map standard fields, and put others in custom_data
+    const studentName = data.student_name || data['Student Name'] || '';
+    const courseName = data.course_name || data['Course Name'] || '';
+    const completionDate = data.completion_date || data['Completion Date'] || '';
+
     const certificate = await certificateRepo.createCertificate(
         templateId,
         userId,
         studentName,
         courseName,
         completionDate,
-        verificationCode
+        verificationCode,
+        data // Pass full data to be stored in custom_data
     );
 
     const pdfPath = await generateCertificatePdf({
@@ -44,12 +48,13 @@ export const generateSingleCertificate = async (
             student_name: certificate.student_name,
             course_name: certificate.course_name,
             completion_date: certificate.completion_date,
-            verification_code: certificate.verification_code
+            verification_code: certificate.verification_code,
+            custom_data: certificate.custom_data
         },
         template: {
             template_image_path: templateDetails.template_image_path,
-            canvas_width: templateDetails.canvas_width,
-            canvas_height: templateDetails.canvas_height
+            canvas_width: templateDetails.canvas_width || 0,
+            canvas_height: templateDetails.canvas_height || 0
         },
         fields: fields as any
     });
@@ -66,7 +71,8 @@ export const generateBulkCertificates = async (
     userId: string,
     role: string,
     templateId: string,
-    csvFilePath: string
+    csvFilePath: string,
+    onProgress?: (current: number, total: number) => void
 ) => {
     if (role === 'admin') {
         throw new Error('Admins are restricted from generating certificates. Only Users can generate certificates.');
@@ -78,16 +84,28 @@ export const generateBulkCertificates = async (
     }
 
     const fields = await templateRepo.getTemplateFields(templateId);
+    const dynamicFields = fields.filter(f => !f.is_static);
     const students: BulkStudentData[] = [];
 
     await new Promise<void>((resolve, reject) => {
         fs.createReadStream(csvFilePath)
             .pipe(csvParser())
             .on('data', (row: any) => {
+                const customData: any = {};
+
+                // Map CSV columns to field types based on labels
+                dynamicFields.forEach(f => {
+                    const value = row[f.label] || row[f.label.toLowerCase()] || row[f.field_type];
+                    if (value !== undefined) {
+                        customData[f.field_type] = value;
+                    }
+                });
+
                 students.push({
-                    student_name: row.Name || row.name || row.student_name,
-                    course_name: row.Course || row.course || row.course_name,
-                    completion_date: row['Completion Date'] || row.completion_date || row.date,
+                    student_name: customData['student_name'] || row.Name || row.name || '',
+                    course_name: customData['course_name'] || row.Course || row.course || '',
+                    completion_date: customData['completion_date'] || row['Completion Date'] || row['completion_date'] || '',
+                    custom_data: customData
                 });
             })
             .on('end', resolve)
@@ -98,10 +116,15 @@ export const generateBulkCertificates = async (
         throw new Error('CSV file is empty or has invalid format.');
     }
 
+    const total = students.length;
     const generatedCerts = [];
     const pdfPaths: string[] = [];
 
-    for (const student of students) {
+    // Send initial progress
+    if (onProgress) onProgress(0, total);
+
+    for (let i = 0; i < students.length; i++) {
+        const student = students[i];
         const verificationCode = uuidv4().split('-')[0].toUpperCase();
         const certificate = await certificateRepo.createCertificate(
             templateId,
@@ -109,7 +132,8 @@ export const generateBulkCertificates = async (
             student.student_name,
             student.course_name,
             student.completion_date,
-            verificationCode
+            verificationCode,
+            student.custom_data
         );
 
         const pdfPath = await generateCertificatePdf({
@@ -118,12 +142,13 @@ export const generateBulkCertificates = async (
                 student_name: certificate.student_name,
                 course_name: certificate.course_name,
                 completion_date: certificate.completion_date,
-                verification_code: certificate.verification_code
+                verification_code: certificate.verification_code,
+                custom_data: certificate.custom_data
             },
             template: {
                 template_image_path: templateDetails.template_image_path,
-                canvas_width: templateDetails.canvas_width,
-                canvas_height: templateDetails.canvas_height
+                canvas_width: templateDetails.canvas_width || 0,
+                canvas_height: templateDetails.canvas_height || 0
             },
             fields: fields as any
         });
@@ -133,6 +158,9 @@ export const generateBulkCertificates = async (
         // Normalize path for Windows: strip leading slash/backslash
         const normalizedPdfPath = pdfPath.replace(/^[/\\]+/, "");
         pdfPaths.push(path.join(__dirname, '..', '..', normalizedPdfPath));
+
+        // Send progress update after each certificate
+        if (onProgress) onProgress(i + 1, total);
     }
 
     // Create ZIP

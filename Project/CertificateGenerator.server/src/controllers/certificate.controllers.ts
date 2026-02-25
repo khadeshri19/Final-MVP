@@ -5,10 +5,10 @@ import fs from 'fs';
 
 export const generateCertificate = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        const { template_id, student_name, course_name, completion_date } = req.body;
+        const { template_id } = req.body;
 
-        if (!template_id || !student_name || !course_name || !completion_date) {
-            res.status(400).json({ error: 'template_id, student_name, course_name, and completion_date are required.' });
+        if (!template_id) {
+            res.status(400).json({ error: 'template_id is required.' });
             return;
         }
 
@@ -16,9 +16,7 @@ export const generateCertificate = async (req: AuthRequest, res: Response): Prom
             req.user!.id,
             req.user!.role,
             template_id,
-            student_name,
-            course_name,
-            completion_date
+            req.body
         );
 
         res.status(201).json(result);
@@ -38,11 +36,18 @@ export const generateCertificate = async (req: AuthRequest, res: Response): Prom
 };
 
 export const generateBulkCertificates = async (req: AuthRequest, res: Response): Promise<void> => {
+    // Set SSE headers for streaming progress
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
     try {
         const { template_id } = req.body;
 
         if (!template_id || !req.file) {
-            res.status(400).json({ error: 'template_id and CSV file are required.' });
+            res.write(`data: ${JSON.stringify({ type: 'error', error: 'template_id and CSV file are required.' })}\n\n`);
+            res.end();
             return;
         }
 
@@ -50,7 +55,10 @@ export const generateBulkCertificates = async (req: AuthRequest, res: Response):
             req.user!.id,
             req.user!.role,
             template_id,
-            req.file.path
+            req.file.path,
+            (current: number, total: number) => {
+                res.write(`data: ${JSON.stringify({ type: 'progress', current, total })}\n\n`);
+            }
         );
 
         // Cleanup CSV
@@ -58,7 +66,9 @@ export const generateBulkCertificates = async (req: AuthRequest, res: Response):
             fs.unlinkSync(req.file.path);
         }
 
-        res.status(201).json(result);
+        // Send final result
+        res.write(`data: ${JSON.stringify({ type: 'done', ...result })}\n\n`);
+        res.end();
     } catch (error: any) {
         console.error('Bulk generation error:', error);
         // Cleanup CSV if error
@@ -66,17 +76,9 @@ export const generateBulkCertificates = async (req: AuthRequest, res: Response):
             fs.unlinkSync(req.file.path);
         }
 
-        const errorMessage = error.message || '';
-
-        if (errorMessage.includes('Restricted')) {
-            res.status(403).json({ error: errorMessage });
-        } else if (errorMessage === 'Template not found.') {
-            res.status(404).json({ error: errorMessage });
-        } else if (errorMessage.includes('CSV file is empty')) {
-            res.status(400).json({ error: errorMessage });
-        } else {
-            res.status(500).json({ error: errorMessage || 'Failed to generate bulk certificates.' });
-        }
+        const errorMessage = error.message || 'Failed to generate bulk certificates.';
+        res.write(`data: ${JSON.stringify({ type: 'error', error: errorMessage })}\n\n`);
+        res.end();
     }
 };
 

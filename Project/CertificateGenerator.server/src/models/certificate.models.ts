@@ -18,6 +18,7 @@ export interface Certificate {
     verification_code: string;       // Short code for the public verification URL
     created_at: Date;
     status: 'active' | 'disabled';   // Disabled certificates won't pass verification
+    custom_data?: any;               // Any additional dynamic field data
 }
 
 // Used when uploading a CSV for bulk certificate generation
@@ -25,6 +26,7 @@ export interface BulkStudentData {
     student_name: string;
     course_name: string;
     completion_date: string;
+    custom_data?: any;
 }
 
 /*
@@ -39,6 +41,7 @@ export interface CertificateData {
         course_name: string;
         completion_date: string;
         verification_code: string;
+        custom_data?: any;
     };
     template: {
         template_image_path: string;
@@ -57,5 +60,6 @@ export interface CertificateData {
         is_italic: boolean;
         text_align: string;          // "left", "center", or "right"
         default_value?: string;      // Default/preview value for custom fields
+        is_static: boolean;
     }>;
 }

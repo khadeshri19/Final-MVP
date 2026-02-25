@@ -16,6 +16,7 @@ interface Field {
   is_italic: boolean;
   text_align: string;
   default_value?: string;
+  is_static: boolean;
 }
 
 interface Template {
@@ -34,30 +35,35 @@ const FIELD_TYPES = [
     label: "Student Name",
     inputType: "text",
     placeholder: "Enter student name",
+    is_static: false,
   },
   {
     type: "course_name",
     label: "Course Name",
     inputType: "text",
     placeholder: "Enter course name",
+    is_static: false,
   },
   {
     type: "completion_date",
     label: "Completion Date",
     inputType: "date",
     placeholder: "",
+    is_static: false,
   },
   {
     type: "certificate_id",
     label: "Certificate ID",
     inputType: "auto",
     placeholder: "Auto-generated",
+    is_static: false,
   },
   {
     type: "verification_link",
     label: "Verification Link",
     inputType: "auto",
     placeholder: "Auto-generated",
+    is_static: false,
   },
 ];
 
@@ -135,6 +141,7 @@ export default function TemplateDesigner() {
 
   const [customFieldLabel, setCustomFieldLabel] = useState("");
   const [showCustomInput, setShowCustomInput] = useState(false);
+  const [addStatic, setAddStatic] = useState(false);
 
   // Current displayed image size
   const [imgDims, setImgDims] = useState({ width: 0, height: 0 });
@@ -194,6 +201,7 @@ export default function TemplateDesigner() {
           id: f.id || crypto.randomUUID(),
           position_x: f.position_x ?? 50,
           position_y: f.position_y ?? 50,
+          is_static: f.is_static ?? false,
         })),
       );
 
@@ -232,7 +240,7 @@ export default function TemplateDesigner() {
     }
   };
 
-  const addField = (type: string, label: string) => {
+  const addField = (type: string, label: string, isStatic: boolean = false) => {
     if (!type.startsWith("custom_text_") && fields.some((f) => f.field_type === type)) {
       showToast("error", `"${label}" field already added.`);
       return;
@@ -250,19 +258,20 @@ export default function TemplateDesigner() {
       is_bold: false,
       is_italic: false,
       text_align: "left",
+      is_static: isStatic,
     };
     setFields((prev) => [...prev, newField]);
     setSelectedField(newField);
   };
 
-  const addCustomField = () => {
+  const addCustomField = (isStatic: boolean = false) => {
     const label = customFieldLabel.trim();
     if (!label) {
       showToast("error", "Please enter a label for the custom field.");
       return;
     }
     const uniqueType = `custom_text_${Date.now()}`;
-    addField(uniqueType, label);
+    addField(uniqueType, label, isStatic);
     setCustomFieldLabel("");
     setShowCustomInput(false);
   };
@@ -581,9 +590,9 @@ export default function TemplateDesigner() {
                             style={
                               isAdded
                                 ? {
-                                    opacity: 0.6,
-                                    cursor: "default",
-                                  }
+                                  opacity: 0.6,
+                                  cursor: "default",
+                                }
                                 : {}
                             }
                           >
@@ -629,7 +638,7 @@ export default function TemplateDesigner() {
       <div className="designer-container">
         {/* Sidebar */}
         <div className="designer-sidebar">
-          {/* Add Fields */}
+          {/* Add Custom Text — always dynamic */}
           {selectedTemplate && (
             <div className="card">
               <h3 style={{ marginBottom: "12px", fontSize: "0.95rem" }}>
@@ -645,26 +654,19 @@ export default function TemplateDesigner() {
                   <span style={{ color: "#046429" }}>ADD</span>
                 </div>
               ) : (
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "8px",
-                    alignItems: "center",
-                    padding: "4px 0",
-                  }}
-                >
+                <div style={{ display: "flex", gap: "8px", alignItems: "center", padding: "4px 0" }}>
                   <input
                     className="input"
                     placeholder="Field label"
                     value={customFieldLabel}
                     onChange={(e) => setCustomFieldLabel(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && addCustomField()}
+                    onKeyDown={(e) => e.key === "Enter" && addCustomField(false)}
                     autoFocus
                     style={{ flex: 1, fontSize: "0.85rem" }}
                   />
                   <button
-                    className="btn "
-                    onClick={addCustomField}
+                    className="btn"
+                    onClick={() => addCustomField(false)}
                     style={{ whiteSpace: "nowrap", fontSize: "0.8rem" }}
                   >
                     Add
@@ -673,105 +675,100 @@ export default function TemplateDesigner() {
               )}
             </div>
           )}
-          {/* Field Data Inputs */}
-          {selectedTemplate && fields.length > 0 && (
+
+          {/* Static Fields List */}
+          {selectedTemplate && fields.filter(f => f.is_static).length > 0 && (
             <div className="card">
               <h3 style={{ marginBottom: "12px", fontSize: "0.95rem" }}>
-                Field Preview Data
+                Static Fields
               </h3>
+              <div className="field-list">
+                {fields.filter(f => f.is_static).map(field => (
+                  <div
+                    key={field.id}
+                    className={`field-item ${selectedField?.id === field.id ? "selected" : ""}`}
+                    onClick={() => setSelectedField(field)}
+                  >
+                    <span>{field.label}</span>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); removeField(field.id); }}
+                      style={{ background: "none", border: "none", color: "red", cursor: "pointer", fontSize: "0.75rem" }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "10px",
-                }}
-              >
-                {fields.map((field) => {
-                  const fieldDef = FIELD_TYPES.find(
-                    (ft) => ft.type === field.field_type,
-                  );
-                  const effectiveDef = fieldDef || {
-                    type: field.field_type,
-                    label: field.label,
-                    inputType: "text",
-                    placeholder: "Enter custom text",
-                  };
+          {/* Dynamic Fields List */}
+          {selectedTemplate && fields.filter(f => !f.is_static).length > 0 && (
+            <div className="card">
+              <h3 style={{ marginBottom: "12px", fontSize: "0.95rem" }}>
+                Dynamic Fields
+              </h3>
+              <div className="field-list">
+                {fields.filter(f => !f.is_static).map(field => (
+                  <div
+                    key={field.id}
+                    className={`field-item ${selectedField?.id === field.id ? "selected" : ""}`}
+                    onClick={() => setSelectedField(field)}
+                  >
+                    <span>{field.label}</span>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); removeField(field.id); }}
+                      style={{ background: "none", border: "none", color: "red", cursor: "pointer", fontSize: "0.75rem" }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
-                  if (effectiveDef.inputType === "auto") {
-                    const displayValue =
-                      field.field_type === "certificate_id"
-                        ? previewCertId || "Save fields to generate"
-                        : field.field_type === "verification_link"
-                          ? previewVerifCode
-                            ? `sarvarth.com/verify/${previewVerifCode}`
-                            : "Save fields to generate"
-                          : "🔒 Auto-generated by system";
+          {/* Field Editor for selected field */}
+          {selectedField && (
+            <div className="card">
+              <h3 style={{ marginBottom: "12px", fontSize: "0.95rem" }}>
+                Edit: {selectedField.label}
+              </h3>
+              <div className="input-group">
+                <label style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>
+                  {selectedField.is_static ? "Static Text Value" : "Preview Value"}
+                </label>
+                {FIELD_TYPES.find(ft => ft.type === selectedField.field_type)?.inputType === 'date' ? (
+                  <input
+                    type="date"
+                    className="input"
+                    value={previewValues[selectedField.field_type] || ""}
+                    onChange={(e) => updatePreview(selectedField.field_type, e.target.value)}
+                  />
+                ) : FIELD_TYPES.find(ft => ft.type === selectedField.field_type)?.inputType === 'auto' ? (
+                  <div style={{ padding: "8px", background: "var(--bg-elevated)", fontSize: "0.8rem", borderRadius: "4px", color: "var(--text-muted)" }}>
+                    Auto-generated by system
+                  </div>
+                ) : (
+                  <input
+                    type="text"
+                    className="input"
+                    placeholder="Enter text..."
+                    value={previewValues[selectedField.field_type] || ""}
+                    onChange={(e) => updatePreview(selectedField.field_type, e.target.value)}
+                  />
+                )}
+              </div>
 
-                    return (
-                      <div key={field.id} className="input-group">
-                        <label
-                          style={{
-                            fontSize: "0.8rem",
-                            color: "var(--text-secondary)",
-                          }}
-                        >
-                          {effectiveDef.label}
-                        </label>
-                        <div
-                          style={{
-                            padding: "8px 12px",
-                            background: "var(--bg-elevated)",
-                            borderRadius: "var(--radius-md)",
-                            fontSize: "0.82rem",
-                            color: previewCertId
-                              ? "var(--success)"
-                              : "var(--text-muted)",
-                            border: "1px solid var(--border-default)",
-                            fontStyle: previewCertId ? "normal" : "italic",
-                            fontWeight: previewCertId ? "600" : "normal",
-                            wordBreak: "break-all",
-                          }}
-                        >
-                          {displayValue}
-                        </div>
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <div key={field.id} className="input-group">
-                      <label
-                        style={{
-                          fontSize: "0.8rem",
-                          color: "var(--text-secondary)",
-                        }}
-                      >
-                        {effectiveDef.label}
-                      </label>
-                      {effectiveDef.inputType === "date" ? (
-                        <input
-                          type="date"
-                          className="input"
-                          value={previewValues[field.field_type] || ""}
-                          onChange={(e) =>
-                            updatePreview(field.field_type, e.target.value)
-                          }
-                        />
-                      ) : (
-                        <input
-                          type="text"
-                          className="input"
-                          placeholder={effectiveDef.placeholder}
-                          value={previewValues[field.field_type] || ""}
-                          onChange={(e) =>
-                            updatePreview(field.field_type, e.target.value)
-                          }
-                        />
-                      )}
-                    </div>
-                  );
-                })}
+              <div style={{ marginTop: "10px" }}>
+                <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.8rem", color: "var(--text-secondary)" }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedField.is_static}
+                    onChange={(e) => updateField("is_static", e.target.checked)}
+                  />
+                  Is Static? (Doesn't change per certificate)
+                </label>
               </div>
             </div>
           )}
@@ -891,11 +888,11 @@ export default function TemplateDesigner() {
                     {field.field_type.startsWith("custom_text_")
                       ? previewValues[field.field_type] || field.label
                       : getPreviewValue(
-                          field.field_type,
-                          previewValues,
-                          previewCertId,
-                          previewVerifCode,
-                        )}
+                        field.field_type,
+                        previewValues,
+                        previewCertId,
+                        previewVerifCode,
+                      )}
                   </div>
                 ))}
             </div>

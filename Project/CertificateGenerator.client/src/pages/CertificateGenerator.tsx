@@ -12,14 +12,9 @@ interface Template {
 export default function CertificateGeneratorPage() {
     const { user } = useAuth();
     const [templates, setTemplates] = useState<Template[]>([]);
-
-    if (user?.role === 'admin') {
-        return <Navigate to="/dashboard" />;
-    }
     const [templateId, setTemplateId] = useState('');
-    const [studentName, setStudentName] = useState('');
-    const [courseName, setCourseName] = useState('');
-    const [completionDate, setCompletionDate] = useState('');
+    const [fields, setFields] = useState<any[]>([]);
+    const [formData, setFormData] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<any>(null);
     const [error, setError] = useState('');
@@ -28,23 +23,57 @@ export default function CertificateGeneratorPage() {
         api.get('/templates').then((res) => setTemplates(res.data.templates));
     }, []);
 
+    useEffect(() => {
+        if (templateId) {
+            api.get(`/templates/${templateId}`).then((res) => {
+                const dynamicFields = res.data.fields.filter((f: any) =>
+                    !f.is_static &&
+                    f.field_type !== 'certificate_id' &&
+                    f.field_type !== 'verification_link'
+                );
+                setFields(dynamicFields);
+
+                // Initialize form data with default values or empty strings
+                const initial: Record<string, string> = {};
+                dynamicFields.forEach((f: any) => {
+                    initial[f.field_type] = f.default_value || '';
+                });
+                setFormData(initial);
+            }).catch(() => setFields([]));
+        } else {
+            setFields([]);
+            setFormData({});
+        }
+    }, [templateId]);
+
+    const handleInputChange = (fieldType: string, value: string) => {
+        setFormData(prev => ({ ...prev, [fieldType]: value }));
+    };
+
     const handleGenerate = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         setResult(null);
 
-        if (!templateId || !studentName || !courseName || !completionDate) {
-            setError('All fields are required.');
+        if (!templateId) {
+            setError('Please select a template.');
+            return;
+        }
+
+        // Check if all required fields are filled (basic check)
+        const missingFields = fields.filter(f => !formData[f.field_type]);
+        if (missingFields.length > 0) {
+            setError(`Please fill in all fields: ${missingFields.map(f => f.label).join(', ')}`);
             return;
         }
 
         setLoading(true);
         try {
+            // We'll send the whole formData object.
+            // Backend needs to handle this (Mapping standard fields and keeping extras in customData)
             const res = await api.post('/certificates/generate', {
                 template_id: templateId,
-                student_name: studentName,
-                course_name: courseName,
-                completion_date: completionDate,
+                ...formData
             });
             setResult(res.data);
         } catch (err: any) {
@@ -99,38 +128,30 @@ export default function CertificateGeneratorPage() {
                             </select>
                         </div>
 
-                        <div className="input-group">
-                            <label>Student Name</label>
-                            <input
-                                className="input"
-                                placeholder="Enter student name"
-                                value={studentName}
-                                onChange={(e) => setStudentName(e.target.value)}
-                            />
-                        </div>
-
-                        <div className="input-group">
-                            <label>Course Name</label>
-                            <input
-                                className="input"
-                                placeholder="Enter course name"
-                                value={courseName}
-                                onChange={(e) => setCourseName(e.target.value)}
-                            />
-                        </div>
-
-                        <div className="input-group">
-                            <label>Completion Date</label>
-                            <input
-                                type="date"
-                                className="input"
-                                value={completionDate}
-                                onChange={(e) => setCompletionDate(e.target.value)}
-                            />
-                        </div>
+                        {fields.map(field => (
+                            <div key={field.id} className="input-group">
+                                <label>{field.label}</label>
+                                {field.field_type === 'completion_date' ? (
+                                    <input
+                                        type="date"
+                                        className="input"
+                                        value={formData[field.field_type] || ''}
+                                        onChange={(e) => handleInputChange(field.field_type, e.target.value)}
+                                    />
+                                ) : (
+                                    <input
+                                        type="text"
+                                        className="input"
+                                        placeholder={`Enter ${field.label.toLowerCase()}`}
+                                        value={formData[field.field_type] || ''}
+                                        onChange={(e) => handleInputChange(field.field_type, e.target.value)}
+                                    />
+                                )}
+                            </div>
+                        ))}
                     </div>
 
-                    <button type="submit" className="btn btn-green btn-lg" disabled={loading} style={{ width: '100%' }}>
+                    <button type="submit" className="btn btn-green btn-lg" disabled={loading} style={{ width: '100%', marginTop: fields.length > 0 ? '20px' : '0' }}>
                         {loading ? <span className="spinner" /> : 'Generate Certificate'}
                     </button>
                 </form>

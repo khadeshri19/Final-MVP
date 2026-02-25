@@ -40,6 +40,10 @@ function getFieldValue(
     case "verification_link":
       return `sarvarth.com/verify/${shortCode}`;
     default:
+      // Check custom_data first for any generic/custom fields
+      if (data.custom_data && data.custom_data[fieldType]) {
+        return data.custom_data[fieldType];
+      }
       // For custom text fields, use ONLY the default value (no fallback to label)
       return defaultValue || "";
   }
