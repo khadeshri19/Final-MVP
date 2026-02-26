@@ -197,6 +197,24 @@ export const getCertificateDetails = async (id: string) => {
     return cert;
 };
 
+export const deleteCertificate = async (id: string, userId: string) => {
+    const deleted = await certificateRepo.deleteCertificateById(id, userId);
+    if (!deleted) {
+        throw new Error('Certificate not found or you do not have permission to delete it.');
+    }
+
+    // Clean up the PDF file if it exists
+    if (deleted.pdf_path) {
+        const normalizedPdfPath = deleted.pdf_path.replace(/^[/\\]+/, "");
+        const pdfFullPath = path.join(__dirname, '..', '..', normalizedPdfPath);
+        if (fs.existsSync(pdfFullPath)) {
+            fs.unlinkSync(pdfFullPath);
+        }
+    }
+
+    return deleted;
+};
+
 export const getCertificatePdfPath = async (id: string) => {
     const cert = await certificateRepo.getCertificateById(id);
     if (!cert || !cert.pdf_path) return null;

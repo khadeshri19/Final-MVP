@@ -34,3 +34,11 @@ export const getCertificateById = async (id: string): Promise<Certificate | null
     const result = await pool.query('SELECT * FROM certificates WHERE id = $1', [id]);
     return result.rows[0] || null;
 };
+
+export const deleteCertificateById = async (id: string, userId: string): Promise<Certificate | null> => {
+    const result = await pool.query(
+        'DELETE FROM certificates WHERE id = $1 AND user_id = $2 RETURNING *',
+        [id, userId]
+    );
+    return result.rows[0] || null;
+};

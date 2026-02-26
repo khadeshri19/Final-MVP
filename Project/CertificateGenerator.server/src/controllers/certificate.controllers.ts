@@ -125,3 +125,19 @@ export const downloadCertificate = async (req: AuthRequest, res: Response): Prom
         res.status(500).json({ error: 'Failed to download certificate.' });
     }
 };
+
+export const deleteCertificate = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        const id = req.params.id as string;
+        const deleted = await certificateService.deleteCertificate(id, req.user!.id);
+        res.json({ message: 'Certificate deleted successfully.', certificate: deleted });
+    } catch (error: any) {
+        console.error('Delete certificate error:', error);
+        const errorMessage = error.message || 'Failed to delete certificate.';
+        if (errorMessage.includes('not found') || errorMessage.includes('permission')) {
+            res.status(404).json({ error: errorMessage });
+        } else {
+            res.status(500).json({ error: errorMessage });
+        }
+    }
+};

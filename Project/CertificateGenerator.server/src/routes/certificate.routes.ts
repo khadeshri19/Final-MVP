@@ -12,5 +12,6 @@ router.post('/bulk', authMiddleware, upload.single('csv'), certificateController
 router.get('/', authMiddleware, certificateController.getCertificates);
 router.get('/:id', authMiddleware, certificateController.getCertificateDetails);
 router.get('/download/:id', authMiddleware, certificateController.downloadCertificate);
+router.delete('/:id', authMiddleware, certificateController.deleteCertificate);
 
 export default router;

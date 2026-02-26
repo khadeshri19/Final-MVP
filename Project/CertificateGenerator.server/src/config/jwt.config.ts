@@ -12,7 +12,7 @@ dotenv.config();
 
 // Access token  - used for authenticating every API request
 export const JWT_SECRET = process.env.JWT_SECRET || "secret";
-export const JWT_EXPIRES_IN = process.env.JWT_TOKEN_EXPIRES_IN || "1d";
+export const JWT_EXPIRES_IN = process.env.JWT_TOKEN_EXPIRES_IN || "30d";
 
 // Refresh token  - used to get a new access token when the old one expires
 export const REFRESH_TOKEN_SECRET =
