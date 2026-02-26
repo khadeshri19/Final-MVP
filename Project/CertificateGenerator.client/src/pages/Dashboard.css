@@ -27,7 +27,7 @@
     animation-delay: 0.19s;
 }*/
 
-/* Gradient glow behind each card */
+/* Gradient glow behind each card
 .stat-card::before {
     content: '';
     position: absolute;
@@ -72,7 +72,7 @@
 .stat-info p {
     font-size: 0.85rem;
     color: var(--text-secondary);
-}
+} */
 
 /* ---- Quick Actions ---- */
 .dashboard-actions {

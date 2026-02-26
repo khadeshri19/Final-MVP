@@ -1,5 +1,5 @@
 /**
- * server.ts — Application Entry Point
+ * server.ts  - Application Entry Point
  *
  * This is where everything kicks off! We load environment variables,
  * initialize the database, and spin up the Express server.
@@ -7,25 +7,25 @@
  * runs in a broken state.
  */
 
-import dotenv from 'dotenv';
-import app from './app';
-import { initDb } from './script/init.script';
+import dotenv from "dotenv";
+import app from "./app";
+import { initDb } from "./script/init.script";
 
 // Load environment variables from .env file before anything else
 dotenv.config();
 
 // Use the port from environment or default to 5000
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5050;
 
 // First set up our database tables, then start listening for requests
 initDb()
-    .then(() => {
-        app.listen(PORT, () => {
-            console.log(`Server running on http://localhost:${PORT}`);
-        });
-    })
-    .catch((err) => {
-        // If the database isn't reachable, there's no point in running the server
-        console.error('Failed to initialize database:', err);
-        process.exit(1);
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
     });
+  })
+  .catch((err) => {
+    // If the database isn't reachable, there's no point in running the server
+    console.error("Failed to initialize database:", err);
+    process.exit(1);
+  });

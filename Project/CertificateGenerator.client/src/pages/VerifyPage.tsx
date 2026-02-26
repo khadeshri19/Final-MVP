@@ -66,38 +66,47 @@ export default function VerifyPage() {
                 This certificate is successfully completed 
               </p>
 
-              <div className="verify-details">
-                <div className="verify-row">
-                  <span className="label">Student Name</span>
-                  <span className="value">{certificate.student_name}</span>
-                </div>
-                <div className="verify-row">
-                  <span className="label">Course</span>
-                  <span className="value">{certificate.course_name}</span>
-                </div>
-                <div className="verify-row">
-                  <span className="label">Completion Date</span>
-                  <span className="value">
-                    {new Date(certificate.completion_date).toLocaleDateString()}
-                  </span>
-                </div>
-                <div className="verify-row">
-                  <span className="label">Certificate ID</span>
-                  <span className="value" style={{ fontFamily: "monospace" }}>
-                    {certificate.certificate_id.substring(0, 8).toUpperCase()}
-                  </span>
-                </div>
-                <div className="verify-row">
-                  <span className="label">Issued By</span>
-                  <span className="value">{certificate.issued_by}</span>
-                </div>
-                <div className="verify-row">
-                  <span className="label">Issue Date</span>
-                  <span className="value">
-                    {new Date(certificate.issue_date).toLocaleDateString()}
-                  </span>
-                </div>
-              </div>
+              <div className="verify-table-container">
+  <table className="verify-table">
+    <tbody>
+      <tr>
+        <td className="verify-label">Student Name</td>
+        <td className="verify-value">{certificate.student_name}</td>
+      </tr>
+
+      <tr>
+        <td className="verify-label">Course</td>
+        <td className="verify-value">{certificate.course_name}</td>
+      </tr>
+
+      <tr>
+        <td className="verify-label">Completion Date</td>
+        <td className="verify-value">
+          {new Date(certificate.completion_date).toLocaleDateString()}
+        </td>
+      </tr>
+
+      <tr>
+        <td className="verify-label">Certificate ID</td>
+        <td className="verify-value verify-mono">
+          {certificate.certificate_id.substring(0, 8).toUpperCase()}
+        </td>
+      </tr>
+
+      <tr>
+        <td className="verify-label">Issued By</td>
+        <td className="verify-value">{certificate.issued_by}</td>
+      </tr>
+
+      <tr>
+        <td className="verify-label">Issue Date</td>
+        <td className="verify-value">
+          {new Date(certificate.issue_date).toLocaleDateString()}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
             </>
           ) : (
             <>

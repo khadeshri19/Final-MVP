@@ -73,7 +73,10 @@ export async function generateCertificatePdf(
 
   // Load template image
   // Strip leading slash for path.join compatibility on Windows
-  const normalizedImagePath = template.template_image_path.replace(/^[/\\]+/, "");
+  const normalizedImagePath = template.template_image_path.replace(
+    /^[/\\]+/,
+    "",
+  );
   const templateImagePath = path.join(
     __dirname,
     "..",
@@ -103,7 +106,9 @@ export async function generateCertificatePdf(
       image = await pdfDoc.embedJpg(imageBytes);
     }
   } catch (embedError: any) {
-    console.warn(`[PDF] Embedding as ${ext} failed. Attempting fallback... Error: ${embedError.message}`);
+    console.warn(
+      `[PDF] Embedding as ${ext} failed. Attempting fallback... Error: ${embedError.message}`,
+    );
     // If PNG failed, try JPG. If JPG failed, try PNG.
     try {
       if (ext === ".png") {
@@ -170,7 +175,12 @@ export async function generateCertificatePdf(
 
   // Draw each field onto the PDF
   for (const field of fields) {
-    const text = getFieldValue(field.field_type, certificate, field.label, field.default_value);
+    const text = getFieldValue(
+      field.field_type,
+      certificate,
+      field.label,
+      field.default_value,
+    );
 
     if (!text) {
       console.warn(`[PDF] Skipping empty field: "${field.field_type}"`);
@@ -202,7 +212,7 @@ export async function generateCertificatePdf(
     // Safety check: skip fields that would be off-page
     if (pdfX < 0 || pdfX > pdfWidth || pdfY < -50 || pdfY > pdfHeight + 50) {
       console.error(
-        `[PDF] SKIPPING "${text}" — off-page at pdf(${pdfX.toFixed(0)}, ${pdfY.toFixed(0)})`,
+        `[PDF] SKIPPING "${text}"  - off-page at pdf(${pdfX.toFixed(0)}, ${pdfY.toFixed(0)})`,
       );
       continue;
     }

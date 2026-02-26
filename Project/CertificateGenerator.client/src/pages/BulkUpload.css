@@ -1,0 +1,126 @@
+/* CSV Section */
+.csv-card {
+  margin-bottom: 24px;
+}
+
+.csv-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.csv-description {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.csv-preview {
+  background: var(--bg-elevated);
+  padding: 12px;
+  border-radius: var(--radius-md);
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  overflow: auto;
+}
+
+/* Download Sample CSV Button */
+.download-sample-btn {
+  font-size: 0.75rem;
+  padding: 6px 12px;
+  transition: 0.2s ease;
+}
+
+.download-sample-btn:hover {
+  transform: translateY(-1px);
+  opacity: 0.9;
+}
+
+/* Form Layout */
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Upload Area */
+.upload-area {
+  border: 2px dashed var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 40px;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.upload-area:hover {
+  border-color:rgb(136, 135, 135);
+  background: var(--bg-elevated);
+}
+
+/* Progress */
+.progress-wrapper {
+  margin-top: 10px;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.progress-percent {
+  font-weight: bold;
+  color: var(--primary);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--bg-elevated);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--primary);
+  transition: width 0.3s ease;
+}
+
+/* Utility */
+.full-width {
+  width: 100%;
+}
+
+/* Result Card */
+.result-card {
+  margin-top: 24px;
+  text-align: center;
+}
+
+/* Success Message */
+.result-message {
+  color: var(--success);
+  margin-bottom: 12px;
+}
+
+/* Table Container */
+.head-table-container{
+    text-align: center;
+}
+
+.result-table-container {
+  margin-top: 20px;
+}
+
+
+/* Verification Code Styling */
+.verification-code {
+  font-family: monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+}

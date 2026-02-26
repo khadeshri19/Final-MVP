@@ -51,7 +51,7 @@
 
 .verify-row {
     display: flex;
-    justify-content:space-around;
+    justify-content:space-evenly;
     padding: 10px 0;
     border-bottom: 1px solid var(--border-default);
 }
@@ -69,4 +69,44 @@
 .verify-row .value {
     font-weight: 600;
     font-size: 0.9rem;
+}
+
+/* Container */
+.verify-table-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* Table */
+.verify-table {
+  width: 100%;
+  max-width: 650px;
+  border-collapse: collapse;
+  
+}
+
+/* Table Rows */
+.verify-table tr {
+  border-bottom: 1px solid var(--border-default);
+}
+
+/* Label Column */
+.verify-label {
+  font-weight: 600;
+  padding: 12px;
+  width: 50%;
+  text-align:left;
+}
+
+/* Value Column */
+.verify-value {
+  padding: 12px;
+  text-align:right;
+}
+
+/* Monospace for Certificate ID */
+.verify-mono {
+  font-family: monospace;
+  letter-spacing: 1px;
 }

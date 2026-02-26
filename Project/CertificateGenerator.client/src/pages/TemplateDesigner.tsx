@@ -241,7 +241,10 @@ export default function TemplateDesigner() {
   };
 
   const addField = (type: string, label: string, isStatic: boolean = false) => {
-    if (!type.startsWith("custom_text_") && fields.some((f) => f.field_type === type)) {
+    if (
+      !type.startsWith("custom_text_") &&
+      fields.some((f) => f.field_type === type)
+    ) {
       showToast("error", `"${label}" field already added.`);
       return;
     }
@@ -427,18 +430,18 @@ export default function TemplateDesigner() {
       setSelectedTemplate((prev) =>
         prev
           ? {
-            ...prev,
-            preview_certificate_id: newCertId,
-            preview_verification_code: newVerifCode,
-            canvas_width: displayWidth,
-            canvas_height: displayHeight,
-          }
+              ...prev,
+              preview_certificate_id: newCertId,
+              preview_verification_code: newVerifCode,
+              canvas_width: displayWidth,
+              canvas_height: displayHeight,
+            }
           : null,
       );
 
       showToast(
         "success",
-        `Fields saved! New IDs — Certificate: ${newCertId}, Verification: ${newVerifCode}`,
+        `Fields saved! New IDs  - Certificate: ${newCertId}, Verification: ${newVerifCode}`,
       );
 
       // Update fields with the default_value to persist preview values
@@ -590,16 +593,18 @@ export default function TemplateDesigner() {
                             style={
                               isAdded
                                 ? {
-                                  opacity: 0.6,
-                                  cursor: "default",
-                                }
+                                    opacity: 0.6,
+                                    cursor: "default",
+                                  }
                                 : {}
                             }
                           >
                             <span>{ft.label}</span>
                             {isAdded ? (
                               <span
-                                onClick={() => selectedField && removeField(selectedField.id)}
+                                onClick={() =>
+                                  selectedField && removeField(selectedField.id)
+                                }
                                 style={{
                                   color: "var(--primary-light)",
                                   fontSize: "0.8rem",
@@ -638,7 +643,7 @@ export default function TemplateDesigner() {
       <div className="designer-container">
         {/* Sidebar */}
         <div className="designer-sidebar">
-          {/* Add Custom Text — always dynamic */}
+          {/* Add Custom Text  - always dynamic */}
           {selectedTemplate && (
             <div className="card">
               <h3 style={{ marginBottom: "12px", fontSize: "0.95rem" }}>
@@ -654,13 +659,22 @@ export default function TemplateDesigner() {
                   <span style={{ color: "#046429" }}>ADD</span>
                 </div>
               ) : (
-                <div style={{ display: "flex", gap: "8px", alignItems: "center", padding: "4px 0" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "8px",
+                    alignItems: "center",
+                    padding: "4px 0",
+                  }}
+                >
                   <input
                     className="input"
                     placeholder="Field label"
                     value={customFieldLabel}
                     onChange={(e) => setCustomFieldLabel(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && addCustomField(false)}
+                    onKeyDown={(e) =>
+                      e.key === "Enter" && addCustomField(false)
+                    }
                     autoFocus
                     style={{ flex: 1, fontSize: "0.85rem" }}
                   />
@@ -677,56 +691,79 @@ export default function TemplateDesigner() {
           )}
 
           {/* Static Fields List */}
-          {selectedTemplate && fields.filter(f => f.is_static).length > 0 && (
+          {selectedTemplate && fields.filter((f) => f.is_static).length > 0 && (
             <div className="card">
               <h3 style={{ marginBottom: "12px", fontSize: "0.95rem" }}>
                 Static Fields
               </h3>
               <div className="field-list">
-                {fields.filter(f => f.is_static).map(field => (
-                  <div
-                    key={field.id}
-                    className={`field-item ${selectedField?.id === field.id ? "selected" : ""}`}
-                    onClick={() => setSelectedField(field)}
-                  >
-                    <span>{field.label}</span>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); removeField(field.id); }}
-                      style={{ background: "none", border: "none", color: "red", cursor: "pointer", fontSize: "0.75rem" }}
+                {fields
+                  .filter((f) => f.is_static)
+                  .map((field) => (
+                    <div
+                      key={field.id}
+                      className={`field-item ${selectedField?.id === field.id ? "selected" : ""}`}
+                      onClick={() => setSelectedField(field)}
                     >
-                      Remove
-                    </button>
-                  </div>
-                ))}
+                      <span>{field.label}</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeField(field.id);
+                        }}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          color: "red",
+                          cursor: "pointer",
+                          fontSize: "0.75rem",
+                        }}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
               </div>
             </div>
           )}
 
           {/* Dynamic Fields List */}
-          {selectedTemplate && fields.filter(f => !f.is_static).length > 0 && (
-            <div className="card">
-              <h3 style={{ marginBottom: "12px", fontSize: "0.95rem" }}>
-                Dynamic Fields
-              </h3>
-              <div className="field-list">
-                {fields.filter(f => !f.is_static).map(field => (
-                  <div
-                    key={field.id}
-                    className={`field-item ${selectedField?.id === field.id ? "selected" : ""}`}
-                    onClick={() => setSelectedField(field)}
-                  >
-                    <span>{field.label}</span>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); removeField(field.id); }}
-                      style={{ background: "none", border: "none", color: "red", cursor: "pointer", fontSize: "0.75rem" }}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
+          {selectedTemplate &&
+            fields.filter((f) => !f.is_static).length > 0 && (
+              <div className="card">
+                <h3 style={{ marginBottom: "12px", fontSize: "0.95rem" }}>
+                  Dynamic Fields
+                </h3>
+                <div className="field-list">
+                  {fields
+                    .filter((f) => !f.is_static)
+                    .map((field) => (
+                      <div
+                        key={field.id}
+                        className={`field-item ${selectedField?.id === field.id ? "selected" : ""}`}
+                        onClick={() => setSelectedField(field)}
+                      >
+                        <span>{field.label}</span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeField(field.id);
+                          }}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            color: "red",
+                            cursor: "pointer",
+                            fontSize: "0.75rem",
+                          }}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* Field Editor for selected field */}
           {selectedField && (
@@ -735,18 +772,35 @@ export default function TemplateDesigner() {
                 Edit: {selectedField.label}
               </h3>
               <div className="input-group">
-                <label style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>
-                  {selectedField.is_static ? "Static Text Value" : "Preview Value"}
+                <label
+                  style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}
+                >
+                  {selectedField.is_static
+                    ? "Static Text Value"
+                    : "Preview Value"}
                 </label>
-                {FIELD_TYPES.find(ft => ft.type === selectedField.field_type)?.inputType === 'date' ? (
+                {FIELD_TYPES.find((ft) => ft.type === selectedField.field_type)
+                  ?.inputType === "date" ? (
                   <input
                     type="date"
                     className="input"
                     value={previewValues[selectedField.field_type] || ""}
-                    onChange={(e) => updatePreview(selectedField.field_type, e.target.value)}
+                    onChange={(e) =>
+                      updatePreview(selectedField.field_type, e.target.value)
+                    }
                   />
-                ) : FIELD_TYPES.find(ft => ft.type === selectedField.field_type)?.inputType === 'auto' ? (
-                  <div style={{ padding: "8px", background: "var(--bg-elevated)", fontSize: "0.8rem", borderRadius: "4px", color: "var(--text-muted)" }}>
+                ) : FIELD_TYPES.find(
+                    (ft) => ft.type === selectedField.field_type,
+                  )?.inputType === "auto" ? (
+                  <div
+                    style={{
+                      padding: "8px",
+                      background: "var(--bg-elevated)",
+                      fontSize: "0.8rem",
+                      borderRadius: "4px",
+                      color: "var(--text-muted)",
+                    }}
+                  >
                     Auto-generated by system
                   </div>
                 ) : (
@@ -755,19 +809,29 @@ export default function TemplateDesigner() {
                     className="input"
                     placeholder="Enter text..."
                     value={previewValues[selectedField.field_type] || ""}
-                    onChange={(e) => updatePreview(selectedField.field_type, e.target.value)}
+                    onChange={(e) =>
+                      updatePreview(selectedField.field_type, e.target.value)
+                    }
                   />
                 )}
               </div>
 
               <div style={{ marginTop: "10px" }}>
-                <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.8rem", color: "var(--text-secondary)" }}>
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    fontSize: "0.8rem",
+                    color: "var(--text-secondary)",
+                  }}
+                >
                   <input
                     type="checkbox"
                     checked={selectedField.is_static}
                     onChange={(e) => updateField("is_static", e.target.checked)}
                   />
-                  Is Static? (Doesn't change per certificate)
+                  Static
                 </label>
               </div>
             </div>
@@ -776,7 +840,7 @@ export default function TemplateDesigner() {
           {/* Field Style Controls */}
           {selectedField && (
             <div className="field-controls">
-              <h4>Style — {selectedField.label}</h4>
+              <h4>Style - {selectedField.label}</h4>
               <div className="control-row">
                 <label>Size</label>
                 <input
@@ -888,11 +952,11 @@ export default function TemplateDesigner() {
                     {field.field_type.startsWith("custom_text_")
                       ? previewValues[field.field_type] || field.label
                       : getPreviewValue(
-                        field.field_type,
-                        previewValues,
-                        previewCertId,
-                        previewVerifCode,
-                      )}
+                          field.field_type,
+                          previewValues,
+                          previewCertId,
+                          previewVerifCode,
+                        )}
                   </div>
                 ))}
             </div>

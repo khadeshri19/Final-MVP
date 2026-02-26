@@ -1,14 +1,14 @@
 /* ============================================
-   TEMPLATE DESIGNER — Professional Styling
+   TEMPLATE DESIGNER  - Professional Styling
    ============================================ */
- 
+
 .designer-container {
   display: grid;
   grid-template-columns: 280px 1fr;
   gap: 24px;
   min-height: calc(100vh - 128px);
 }
- 
+
 /* ---- Sidebar / Tool Panel ---- */
 .designer-sidebar {
   width: 290px;
@@ -21,32 +21,31 @@
   background-color: rgb(238, 237, 237);
   padding: 10px;
 }
- 
+
 .designer-sidebar .card {
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(10px);
   border-color: var(--border-default);
 }
- 
+
 .page-header-template {
   display: flex;
   justify-content: space-between; /* pushes button right */
   align-items: center;
   margin-bottom: 24px;
 }
- 
- 
+
 .header-left {
   display: flex;
   flex-direction: column;
 }
- 
+
 .field-list {
   display: flex;
   flex-direction: column;
   gap: 5px;
 }
- 
+
 .field-item {
   padding: 8px 10px;
   background: #ffff;
@@ -58,22 +57,22 @@
   cursor: pointer;
   transition: all var(--transition-fast);
 }
- 
+
 .field-item:hover {
   border-color: var(--bg-elevated);
   background: var(--bg-elevated);
 }
- 
+
 .field-item.selected {
   border-color: #6b6b6b;
   background: var(--bg-elevated);
 }
- 
+
 .field-item span {
   font-size: 0.85rem;
   font-weight: 500;
 }
- 
+
 /* ---- Field Controls / Properties Panel ---- */
 .field-controls {
   display: flex;
@@ -84,7 +83,7 @@
   border: 1px solid var(--border-default);
   border-radius: var(--radius-lg);
 }
- 
+
 .field-controls h4 {
   font-size: 0.78rem;
   color: var(--text-muted);
@@ -92,12 +91,12 @@
   letter-spacing: 0.8px;
   margin-bottom: 2px;
 }
- 
+
 .field-controls .input {
   padding: 6px 8px;
   font-size: 0.7rem;
 }
- 
+
 .field-controls select {
   padding: 8px 10px;
   background: var(--bg-input);
@@ -109,23 +108,23 @@
   outline: none;
   transition: border-color var(--transition-fast);
 }
- 
+
 .field-controls select:focus {
   border-color: var(--primary);
 }
- 
+
 .field-controls .control-row {
   display: flex;
   gap: 8px;
   align-items: center;
 }
- 
+
 .field-controls .control-row label {
   font-size: 0.8rem;
   color: var(--text-secondary);
   min-width: 60px;
 }
- 
+
 /* ---- Canvas Area ---- */
 .designer-canvas {
   position: relative;
@@ -139,7 +138,7 @@
   min-height: 500px;
   box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.04);
 }
- 
+
 .designer-canvas.has-image {
   border-style: solid;
   border-color: var(--border-default);
@@ -147,37 +146,37 @@
   box-shadow:
     var(--shadow-lg),
     inset 0 0 0 1px rgba(255, 255, 255, 0.03);
- 
+
   max-width: 100%;
   max-height: 90vh;
 }
- 
+
 .canvas-placeholder {
   text-align: center;
   color: var(--text-muted);
 }
- 
+
 .canvas-placeholder p {
   margin-top: 8px;
 }
- 
+
 /* ---- Template Image ---- */
 .template-image-container {
   position: relative;
   display: inline-block;
 }
- 
+
 .template-image-container img {
   display: block;
   max-width: 100%;
   height: auto;
 }
- 
+
 /* ---- Draggable Fields ---- */
 .draggable-field {
   position: absolute;
   padding: 0;
- 
+
   border-radius: 4px;
   cursor: grab;
   background: rgba(99, 102, 241, 0.08);
@@ -188,18 +187,18 @@
     border-color 0.15s ease;
   z-index: 10;
 }
- 
+
 .draggable-field.dragging {
   cursor: grabbing;
   border-color: none;
   z-index: 100;
 }
- 
+
 .draggable-field:hover,
 .draggable-field.active {
   border-color: black;
 }
- 
+
 /* ---- Upload Area ---- */
 .upload-area {
   border: 2px dashed var(--border-default);
@@ -209,11 +208,11 @@
   cursor: pointer;
   transition: all var(--transition-fast);
 }
- 
+
 .upload-area:hover {
   background: rgb(236, 236, 236);
 }
- 
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -226,8 +225,8 @@
   align-items: center;
   z-index: 1000;
 }
- 
-.modal-content{
+
+.modal-content {
   display: flex;
   flex-direction: column;
   gap: 5px;
@@ -238,14 +237,11 @@
   border-radius: 8px;
   width: 400px;
   max-width: 90%;
- 
 }
- 
+
 /* ---- Responsive ---- */
 @media (max-width: 768px) {
   .designer-container {
     grid-template-columns: 1fr;
   }
 }
- 
- 
