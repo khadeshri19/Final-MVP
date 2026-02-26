@@ -12,7 +12,7 @@ export interface Certificate {
   user_id: string; // The admin/user who generated this certificate
   student_name: string; // Name printed on the certificate
   course_name: string; // Course or program title
-  template_id: string; // Which template design was used
+  template_id: string | null; // Which template design was used (null if template deleted)
   completion_date: string; // When the student completed the course
   pdf_path: string | null; // File path to the generated PDF (null if not yet generated)
   verification_code: string; // Short code for the public verification URL

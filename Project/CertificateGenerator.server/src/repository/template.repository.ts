@@ -104,6 +104,6 @@ export const getCertificatesByTemplateId = async (templateId: string): Promise<a
     return result.rows;
 };
 
-export const deleteCertificatesByTemplateId = async (templateId: string): Promise<void> => {
-    await pool.query('DELETE FROM certificates WHERE template_id = $1', [templateId]);
+export const detachCertificatesFromTemplate = async (templateId: string): Promise<void> => {
+    await pool.query('UPDATE certificates SET template_id = NULL WHERE template_id = $1', [templateId]);
 };

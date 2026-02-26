@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS template_fields (
 -- Certificates table
 CREATE TABLE IF NOT EXISTS certificates (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    template_id UUID REFERENCES templates(id),
+    template_id UUID REFERENCES templates(id) ON DELETE SET NULL,
     user_id UUID REFERENCES users(id),
     student_name VARCHAR(150) NOT NULL,
     course_name VARCHAR(150) NOT NULL,

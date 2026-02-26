@@ -123,6 +123,32 @@ export async function initDb(): Promise<void> {
             ALTER TABLE certificates ALTER COLUMN course_name DROP NOT NULL;
         `);
 
+        // Change certificates.template_id FK to ON DELETE SET NULL
+        // so certificates persist when their template is deleted
+        await pool.query(`
+            DO $$
+            DECLARE
+                fk_name TEXT;
+            BEGIN
+                SELECT tc.constraint_name INTO fk_name
+                FROM information_schema.table_constraints tc
+                JOIN information_schema.key_column_usage kcu
+                    ON tc.constraint_name = kcu.constraint_name
+                WHERE tc.table_name = 'certificates'
+                  AND tc.constraint_type = 'FOREIGN KEY'
+                  AND kcu.column_name = 'template_id';
+
+                IF fk_name IS NOT NULL THEN
+                    EXECUTE 'ALTER TABLE certificates DROP CONSTRAINT ' || fk_name;
+                    ALTER TABLE certificates
+                        ADD CONSTRAINT certificates_template_id_fkey
+                        FOREIGN KEY (template_id) REFERENCES templates(id) ON DELETE SET NULL;
+                END IF;
+
+                ALTER TABLE certificates ALTER COLUMN template_id DROP NOT NULL;
+            END $$;
+        `);
+
         console.log('Database tables initialized and verified');
 
         // Seed admin user

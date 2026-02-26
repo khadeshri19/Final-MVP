@@ -90,23 +90,14 @@ export const deleteTemplate = async (id: string, userId: string) => {
     const template = await templateRepo.getTemplateById(id, userId);
     if (!template) throw new Error('Template not found');
 
-    // Delete PDFs
-    const certs = await templateRepo.getCertificatesByTemplateId(id);
-    for (const cert of certs) {
-        if (cert.pdf_path) {
-            // Normalize path for Windows: strip leading slash/backslash
-            const normalizedPdfPath = cert.pdf_path.replace(/^[/\\]+/, "");
-            const pdfFullPath = path.join(__dirname, '..', '..', normalizedPdfPath);
-            if (fs.existsSync(pdfFullPath)) {
-                fs.unlinkSync(pdfFullPath);
-            }
-        }
-    }
+    // Detach certificates from this template (set template_id to NULL)
+    // so they persist in the dashboard even after the template is deleted
+    await templateRepo.detachCertificatesFromTemplate(id);
 
-    await templateRepo.deleteCertificatesByTemplateId(id);
+    // Delete the template and its fields (fields are CASCADE deleted by DB)
     await templateRepo.deleteTemplate(id);
 
-    // Delete Image
+    // Delete the template image file
     if (template.template_image_path) {
         // Normalize path for Windows: strip leading slash/backslash
         const normalizedImagePath = template.template_image_path.replace(/^[/\\]+/, "");
