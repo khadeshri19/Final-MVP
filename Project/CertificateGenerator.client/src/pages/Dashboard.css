@@ -114,6 +114,12 @@
     margin-bottom: 16px;
 }
 
+.actions-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 /* ---- Entry Animation ---- */
 @keyframes fadeInUp {
     from {
