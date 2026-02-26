@@ -52,6 +52,7 @@
   --font-primary: 'Space Grotesk', 'Inter', system-ui, sans-serif;
   --font-decorative: 'Parisienne', cursive;
   --font-script: 'Alex Brush', cursive;
+  --font-family:'Space Grotesk', 'Inter', system-ui, sans-serif;
 
   /* Transitions */
   --transition-fast: 150ms ease;
@@ -206,7 +207,7 @@ a:hover {
 
 .btn-lg {
   padding: 14px 28px;
-  font-size: 1rem;
+  font-size: 1.1rem;
 }
 
 /* Inputs */
@@ -288,7 +289,7 @@ a:hover {
 /* Page Layout */
 .page {
   flex: 1;
-  padding: 10px;
+  padding:30px 16px 0px 16px;
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
@@ -296,6 +297,11 @@ a:hover {
 
 .page-header {
   margin-bottom: 32px;
+  background: #ffffff;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 10px;
+  box-shadow: var(--shadow-sm);
 
 }
 

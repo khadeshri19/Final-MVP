@@ -4,7 +4,7 @@
     align-items: center;
     justify-content: center;
     padding: 32px;
-    background: var(--bg-primary);
+    background: rgb(246, 246, 246);
 }
 
 .verify-card {
@@ -23,7 +23,7 @@
     max-width: 300px;
     width: 100%;
 
-    margin: 20px;
+    margin: 20px 5px 20px 35px;
 
     
 }

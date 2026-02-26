@@ -56,57 +56,65 @@ export default function VerifyPage() {
             <>
               <div className="verify-card-logo-img">
                 <img
-                  src="/assets/sarvarth-logo.jpg"
+                  src="/assets/sarvathNamLogo.svg"
                   alt="Sarvarth"
                   className="verify-logo-img"
                 />
               </div>
               <h1 style={{ color: "var(--success)" }}>Certificate Verified</h1>
               <p className="subtitle">
-                This certificate is successfully completed 
+                This certificate is successfully completed
               </p>
 
               <div className="verify-table-container">
-  <table className="verify-table">
-    <tbody>
-      <tr>
-        <td className="verify-label">Student Name</td>
-        <td className="verify-value">{certificate.student_name}</td>
-      </tr>
+                <table className="verify-table">
+                  <tbody>
+                    <tr>
+                      <td className="verify-label">Student Name</td>
+                      <td className="verify-value">
+                        {certificate.student_name}
+                      </td>
+                    </tr>
 
-      <tr>
-        <td className="verify-label">Course</td>
-        <td className="verify-value">{certificate.course_name}</td>
-      </tr>
+                    <tr>
+                      <td className="verify-label">Course</td>
+                      <td className="verify-value">
+                        {certificate.course_name}
+                      </td>
+                    </tr>
 
-      <tr>
-        <td className="verify-label">Completion Date</td>
-        <td className="verify-value">
-          {new Date(certificate.completion_date).toLocaleDateString()}
-        </td>
-      </tr>
+                    <tr>
+                      <td className="verify-label">Completion Date</td>
+                      <td className="verify-value">
+                        {new Date(
+                          certificate.completion_date,
+                        ).toLocaleDateString()}
+                      </td>
+                    </tr>
 
-      <tr>
-        <td className="verify-label">Certificate ID</td>
-        <td className="verify-value verify-mono">
-          {certificate.certificate_id.substring(0, 8).toUpperCase()}
-        </td>
-      </tr>
+                    <tr>
+                      <td className="verify-label">Certificate ID</td>
+                      <td className="verify-value verify-mono">
+                        {certificate.certificate_id
+                          .substring(0, 8)
+                          .toUpperCase()}
+                      </td>
+                    </tr>
 
-      <tr>
-        <td className="verify-label">Issued By</td>
-        <td className="verify-value">{certificate.issued_by}</td>
-      </tr>
+                    <tr>
+                      <td className="verify-label">Issued By</td>
+                      <td className="verify-value">{certificate.issued_by}</td>
+                    </tr>
 
-      <tr>
-        <td className="verify-label">Issue Date</td>
-        <td className="verify-value">
-          {new Date(certificate.issue_date).toLocaleDateString()}
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+                    <tr>
+                      <td className="verify-label">Issue Date</td>
+                      <td className="verify-value">
+                        {new Date(certificate.issue_date).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </>
           ) : (
             <>
@@ -115,8 +123,6 @@ export default function VerifyPage() {
               <p className="subtitle">{error}</p>
             </>
           )}
-
-          
         </div>
       </div>
     );

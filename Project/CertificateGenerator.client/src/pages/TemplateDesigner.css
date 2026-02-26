@@ -27,18 +27,30 @@
   backdrop-filter: blur(10px);
   border-color: var(--border-default);
 }
+.page-header-template h1{
+  font-size: 1.4rem;
+}
 
 .page-header-template {
   display: flex;
   justify-content: space-between; /* pushes button right */
+  font-size: 1 rem;
   align-items: center;
   margin-bottom: 24px;
+  background: #ffffff;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 15px;
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-md);
 }
 
 .header-left {
   display: flex;
   flex-direction: column;
 }
+
+
 
 .field-list {
   display: flex;

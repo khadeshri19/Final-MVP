@@ -473,7 +473,7 @@ export default function TemplateDesigner() {
       <div className="page-header-template">
         <h1>Template Designer</h1>
 
-        <button className="btn " onClick={() => setIsModalOpen(true)}>
+        <button className="btn btn-lg " onClick={() => setIsModalOpen(true)}>
           Template
         </button>
         {isModalOpen && (
