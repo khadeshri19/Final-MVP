@@ -430,12 +430,12 @@ export default function TemplateDesigner() {
       setSelectedTemplate((prev) =>
         prev
           ? {
-              ...prev,
-              preview_certificate_id: newCertId,
-              preview_verification_code: newVerifCode,
-              canvas_width: displayWidth,
-              canvas_height: displayHeight,
-            }
+            ...prev,
+            preview_certificate_id: newCertId,
+            preview_verification_code: newVerifCode,
+            canvas_width: displayWidth,
+            canvas_height: displayHeight,
+          }
           : null,
       );
 
@@ -593,9 +593,9 @@ export default function TemplateDesigner() {
                             style={
                               isAdded
                                 ? {
-                                    opacity: 0.6,
-                                    cursor: "default",
-                                  }
+                                  opacity: 0.6,
+                                  cursor: "default",
+                                }
                                 : {}
                             }
                           >
@@ -647,7 +647,7 @@ export default function TemplateDesigner() {
           {selectedTemplate && (
             <div className="card">
               <h3 style={{ marginBottom: "12px", fontSize: "0.95rem" }}>
-                Add Text
+                Add Custom Field
               </h3>
               {!showCustomInput ? (
                 <div
@@ -790,8 +790,8 @@ export default function TemplateDesigner() {
                     }
                   />
                 ) : FIELD_TYPES.find(
-                    (ft) => ft.type === selectedField.field_type,
-                  )?.inputType === "auto" ? (
+                  (ft) => ft.type === selectedField.field_type,
+                )?.inputType === "auto" ? (
                   <div
                     style={{
                       padding: "8px",
@@ -815,25 +815,26 @@ export default function TemplateDesigner() {
                   />
                 )}
               </div>
-
-              <div style={{ marginTop: "10px" }}>
-                <label
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    fontSize: "0.8rem",
-                    color: "var(--text-secondary)",
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedField.is_static}
-                    onChange={(e) => updateField("is_static", e.target.checked)}
-                  />
-                  Static
-                </label>
-              </div>
+              {selectedField.field_type.startsWith("custom_text_") && (
+                <div style={{ marginTop: "10px" }}>
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      fontSize: "0.8rem",
+                      color: "var(--text-secondary)",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedField.is_static}
+                      onChange={(e) => updateField("is_static", e.target.checked)}
+                    />
+                    Static
+                  </label>
+                </div>
+              )}
             </div>
           )}
 
@@ -952,11 +953,11 @@ export default function TemplateDesigner() {
                     {field.field_type.startsWith("custom_text_")
                       ? previewValues[field.field_type] || field.label
                       : getPreviewValue(
-                          field.field_type,
-                          previewValues,
-                          previewCertId,
-                          previewVerifCode,
-                        )}
+                        field.field_type,
+                        previewValues,
+                        previewCertId,
+                        previewVerifCode,
+                      )}
                   </div>
                 ))}
             </div>
