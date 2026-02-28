@@ -19,3 +19,6 @@ const PORT = process.env.PORT || 5000;
 
 // First set up our database tables, then start listening for requests
 
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
