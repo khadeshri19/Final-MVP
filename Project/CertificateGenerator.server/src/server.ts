@@ -15,7 +15,7 @@ import app from "./app";
 dotenv.config();
 
 // Use the port from environment or default to 5000
-const PORT = process.env.PORT || 5050;
+const PORT = process.env.PORT || 5000;
 
 // First set up our database tables, then start listening for requests
 
