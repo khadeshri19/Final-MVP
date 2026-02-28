@@ -16,6 +16,9 @@ COPY . .
 # Build TypeScript
 RUN npm run build
 
+# 🔥 Copy SQL files into dist
+RUN mkdir -p dist/script && cp src/script/*.sql dist/script/
+
 # Expose port
 EXPOSE 5000
 
