@@ -1,0 +1,31 @@
+services:
+  backend:
+    build: ./CertificateGenerator.server
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./CertificateGenerator.server/.env
+    depends_on:
+      - db
+
+  frontend:
+    build: ./CertificateGenerator.client
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: certificate_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  pgdata:
