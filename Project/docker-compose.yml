@@ -30,16 +30,14 @@ services:
       - backend
 
   db:
-    image: postgres:15
-    restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: certificate_db
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-
-volumes:
-  pgdata:
+  image: postgres:15
+  restart: always
+  environment:
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: postgres
+    POSTGRES_DB: certificate_db
+  volumes:
+    - pgdata:/var/lib/postgresql/data
+    - ./CertificateGenerator.server/src/script/init.script.sql:/docker-entrypoint-initdb.d/init.sql
+  ports:
+    - "5432:5432"
