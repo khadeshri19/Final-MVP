@@ -38,7 +38,7 @@ function getFieldValue(
     case "certificate_id":
       return `CERT-${shortId}`;
     case "verification_link":
-      return `sarvarth.com/verify/${shortCode}`;
+      return `https://certificates.https://certificates.sarvarth.com/verify/${shortCode}`;
     default:
       // Check custom_data first for any generic/custom fields
       if (data.custom_data && data.custom_data[fieldType]) {
@@ -141,18 +141,37 @@ export async function generateCertificatePdf(
   // Embed all fonts we might need
   const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const helveticaOblique = await pdfDoc.embedFont(
+    StandardFonts.HelveticaOblique,
+  );
   const timesRoman = await pdfDoc.embedFont(StandardFonts.TimesRoman);
   const timesRomanBold = await pdfDoc.embedFont(StandardFonts.TimesRomanBold);
+  const timesRomanItalic = await pdfDoc.embedFont(
+    StandardFonts.TimesRomanItalic,
+  );
   const courier = await pdfDoc.embedFont(StandardFonts.Courier);
   const courierBold = await pdfDoc.embedFont(StandardFonts.CourierBold);
+  const courierOblique = await pdfDoc.embedFont(StandardFonts.CourierOblique);
 
   const fontMap: Record<
     string,
-    { regular: typeof helvetica; bold: typeof helveticaBold }
+    {
+      regular: typeof helvetica;
+      bold: typeof helveticaBold;
+      italic: typeof helveticaOblique;
+    }
   > = {
-    Helvetica: { regular: helvetica, bold: helveticaBold },
-    TimesRoman: { regular: timesRoman, bold: timesRomanBold },
-    Courier: { regular: courier, bold: courierBold },
+    Helvetica: {
+      regular: helvetica,
+      bold: helveticaBold,
+      italic: helveticaOblique,
+    },
+    TimesRoman: {
+      regular: timesRoman,
+      bold: timesRomanBold,
+      italic: timesRomanItalic,
+    },
+    Courier: { regular: courier, bold: courierBold, italic: courierOblique },
   };
 
   const canvasWidth =
@@ -191,7 +210,17 @@ export async function generateCertificatePdf(
     const fontSize = field.font_size || 16;
 
     const fontEntry = fontMap[field.font_family] || fontMap["Helvetica"];
-    const font = field.is_bold ? fontEntry.bold : fontEntry.regular;
+    let font = fontEntry.regular;
+
+    if (field.is_bold && field.is_italic) {
+      // pdf-lib doesn't support bold+italic built-in
+      // so we fallback to bold
+      font = fontEntry.bold;
+    } else if (field.is_bold) {
+      font = fontEntry.bold;
+    } else if (field.is_italic) {
+      font = fontEntry.italic;
+    }
 
     // Scale positions from display pixels to PDF pixels
     const pdfX = field.position_x * scaleX;
