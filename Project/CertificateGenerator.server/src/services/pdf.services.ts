@@ -38,7 +38,7 @@ function getFieldValue(
     case "certificate_id":
       return `CERT-${shortId}`;
     case "verification_link":
-      return `https://certificates.https://certificates.sarvarth.com/verify/${shortCode}`;
+      return `https://certificates.sarvarth.com/verify/${shortCode}`;
     default:
       // Check custom_data first for any generic/custom fields
       if (data.custom_data && data.custom_data[fieldType]) {
