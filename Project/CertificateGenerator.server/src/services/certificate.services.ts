@@ -84,32 +84,75 @@ export const generateBulkCertificates = async (
     }
 
     const fields = await templateRepo.getTemplateFields(templateId);
-    const dynamicFields = fields.filter(f => !f.is_static);
+    const dynamicFields = fields.filter(f =>
+        !f.is_static &&
+        f.field_type !== 'certificate_id' &&
+        f.field_type !== 'verification_link'
+    );
     const students: BulkStudentData[] = [];
 
     await new Promise<void>((resolve, reject) => {
-        fs.createReadStream(csvFilePath)
-            .pipe(csvParser())
-            .on('data', (row: any) => {
-                const customData: any = {};
+        let headersValidated = false;
+        const stream = fs.createReadStream(csvFilePath)
+            .pipe(csvParser());
 
-                // Map CSV columns to field types based on labels
-                dynamicFields.forEach(f => {
-                    const value = row[f.label] || row[f.label.toLowerCase()] || row[f.field_type];
-                    if (value !== undefined) {
-                        customData[f.field_type] = value;
-                    }
-                });
+        stream.on('headers', (headers: string[]) => {
+            // Strip BOM, surrounding quotes, and whitespace from headers
+            const cleanHeaders = headers.map((h, i) => {
+                let clean = h.trim();
+                // Remove BOM from first header (common in Windows-edited CSVs)
+                if (i === 0 && clean.charCodeAt(0) === 0xFEFF) {
+                    clean = clean.slice(1);
+                }
+                return clean.replace(/^["']|["']$/g, '');
+            });
+            const expectedHeaders = dynamicFields.map(f => f.label);
 
-                students.push({
-                    student_name: customData['student_name'] || row.Name || row.name || '',
-                    course_name: customData['course_name'] || row.Course || row.course || '',
-                    completion_date: customData['completion_date'] || row['Completion Date'] || row['completion_date'] || '',
-                    custom_data: customData
-                });
+            const missingHeaders = expectedHeaders.filter(h => !cleanHeaders.includes(h));
+            const extraHeaders = cleanHeaders.filter(h => h !== '' && !expectedHeaders.includes(h));
+
+            if (missingHeaders.length > 0 || extraHeaders.length > 0) {
+                stream.destroy();
+                let errorMsg = 'Invalid CSV format.';
+                if (missingHeaders.length > 0) {
+                    errorMsg += ` Missing columns: ${missingHeaders.join(', ')}.`;
+                }
+                if (extraHeaders.length > 0) {
+                    errorMsg += ` Unexpected columns: ${extraHeaders.join(', ')}.`;
+                }
+                errorMsg += ` Expected columns: ${expectedHeaders.join(', ')}`;
+                reject(new Error(errorMsg));
+                return;
+            }
+            headersValidated = true;
+        });
+
+        stream.on('data', (row: any) => {
+            if (!headersValidated) return; // Wait for headers event
+
+            const customData: any = {};
+
+            // Map CSV columns to field types EXACTLY based on labels
+            dynamicFields.forEach(f => {
+                const value = row[f.label];
+                if (value !== undefined) {
+                    customData[f.field_type] = value;
+                }
+            });
+
+            students.push({
+                student_name: customData['student_name'] || '',
+                course_name: customData['course_name'] || '',
+                completion_date: customData['completion_date'] || '',
+                custom_data: customData
+            });
+        })
+            .on('end', () => {
+                if (headersValidated) resolve();
             })
-            .on('end', resolve)
-            .on('error', reject);
+            .on('error', (err) => {
+                reject(err);
+            });
     });
 
     if (students.length === 0) {

@@ -16,6 +16,9 @@ COPY . .
 # Build TypeScript
 RUN npm run build
 
+# Ensure upload and generated directories exist
+RUN mkdir -p uploads uploads/csv generated
+
 # Expose port
 EXPOSE 5000
 
