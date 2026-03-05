@@ -206,15 +206,16 @@ export default function BulkUpload() {
 
   return (
     <div className="page">
+      <div className="page-header">
+                <h1>Bulk Certificate Upload</h1>
+                <p>Upload a CSV file to generate certificates in bulk</p>
+            </div>
       <div className="container-narrow">
         <form className="card" onSubmit={handleUpload}>
-          <div className="card-header">
-            <h2>Bulk Certificate Upload</h2>
-            <p>Upload a CSV file to generate certificates in bulk</p>
-          </div>
+          
 
           <div className="form-container">
-            {error && <div className="login-error">{error}</div>}
+           
 
             <div className="input-group">
               <label>Template</label>
@@ -232,7 +233,7 @@ export default function BulkUpload() {
                 ))}
               </select>
             </div>
-
+ {error && <div className="login-error">{error}</div>}
             {templateId && (
               <div className="csv-card">
                 <div className="csv-header">
