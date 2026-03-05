@@ -40,6 +40,7 @@ export const generateBulkCertificates = async (req: AuthRequest, res: Response):
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no'); // Tell nginx to not buffer SSE
     res.flushHeaders();
 
     try {
@@ -58,6 +59,10 @@ export const generateBulkCertificates = async (req: AuthRequest, res: Response):
             req.file.path,
             (current: number, total: number) => {
                 res.write(`data: ${JSON.stringify({ type: 'progress', current, total })}\n\n`);
+                // Explicitly flush to ensure the event is sent immediately
+                if (typeof (res as any).flush === 'function') {
+                    (res as any).flush();
+                }
             }
         );
 

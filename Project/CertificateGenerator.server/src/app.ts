@@ -9,6 +9,7 @@
 import express from "express";
 import cors from "cors";
 import path from "path";
+import fs from "fs";
 import corsOptions from "./config/cors.config";
 import authRoutes from "./routes/auth.routes";
 import templateRoutes from "./routes/template.routes";
@@ -19,6 +20,18 @@ import { requestLogger } from "./middlewares/logger.middlewares";
 import { errorHandler } from "./middlewares/error.middlewares";
 
 const app = express();
+
+// Ensure required directories exist (prevents multer ENOENT errors)
+const uploadsDir = path.join(__dirname, "..", "uploads");
+const csvDir = path.join(__dirname, "..", "uploads", "csv");
+const generatedDir = path.join(__dirname, "..", "generated");
+
+[uploadsDir, csvDir, generatedDir].forEach((dir) => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+    console.log(`[App] Created missing directory: ${dir}`);
+  }
+});
 
 //   Global Middleware
 // These run on every single request that comes into our server.

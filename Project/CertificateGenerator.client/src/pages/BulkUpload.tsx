@@ -79,7 +79,12 @@ export default function BulkUpload() {
         },
       });
 
-      if (!response.ok) throw new Error(`Server error: ${response.status}`);
+      if (!response.ok) {
+        // Attempt to parse error from response if possible
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || errorData.message || `Server error: ${response.status}`);
+      }
+
       if (!response.body) throw new Error("Readable stream not available.");
 
       const reader = response.body.getReader();
@@ -95,25 +100,83 @@ export default function BulkUpload() {
         buffer = lines.pop() || "";
 
         for (const line of lines) {
-          if (!line.trim().startsWith("data: ")) continue;
-          const data = JSON.parse(line.slice(6));
+          const trimmedLine = line.trim();
+          if (!trimmedLine.startsWith("data: ")) continue;
+          try {
+            const data = JSON.parse(trimmedLine.slice(6));
 
-          if (data.type === "progress") {
-            setProgress({ current: data.current, total: data.total });
-          } else if (data.type === "done") {
-            setResult(data);
-            setProgress(null);
-          } else if (data.type === "error") {
-            setError(data.error);
-            setProgress(null);
+            if (data.type === "progress") {
+              setProgress({ current: data.current, total: data.total });
+            } else if (data.type === "done") {
+              setResult(data);
+              setProgress(null);
+            } else if (data.type === "error") {
+              setError(data.error);
+              setProgress(null);
+            }
+          } catch (e) {
+            console.error("Failed to parse SSE line:", line);
           }
         }
       }
     } catch (err: any) {
-      setError(err.message || "Bulk generation failed.");
+      const msg = err.message || "";
+      if (msg.includes("Failed to fetch") || msg.includes("NetworkError")) {
+        setError("Server is unreachable. Please check the server is running and try again.");
+      } else {
+        setError(msg || "Bulk generation failed.");
+      }
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0] || null;
+    setFile(selectedFile);
+    setError("");
+
+    if (!selectedFile || fields.length === 0) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      let text = event.target?.result as string;
+      // Remove BOM character if present (common when editing CSV in Windows)
+      if (text.charCodeAt(0) === 0xfeff) {
+        text = text.slice(1);
+      }
+      const firstLine = text.split(/\r?\n/)[0].trim();
+      // Strip surrounding quotes and trim whitespace from each header
+      const headers = firstLine
+        .split(",")
+        .map((h) => h.trim().replace(/^["']|["']$/g, ""));
+
+      const expectedHeaders = fields.map((f) => f.label);
+
+      // Check for missing columns (expected but not in CSV)
+      const missingHeaders = expectedHeaders.filter(
+        (h) => !headers.includes(h),
+      );
+      // Check for extra columns (in CSV but not expected)
+      const extraHeaders = headers.filter(
+        (h) => h !== "" && !expectedHeaders.includes(h),
+      );
+
+      if (missingHeaders.length > 0 || extraHeaders.length > 0) {
+        let errorMsg = "Invalid CSV format.";
+        if (missingHeaders.length > 0) {
+          errorMsg += ` Missing columns: ${missingHeaders.join(", ")}.`;
+        }
+        if (extraHeaders.length > 0) {
+          errorMsg += ` Unexpected columns: ${extraHeaders.join(", ")}.`;
+        }
+        errorMsg += ` Expected columns: ${expectedHeaders.join(", ")}`;
+        setError(errorMsg);
+        setFile(null);
+        if (fileRef.current) fileRef.current.value = "";
+      }
+    };
+    reader.readAsText(selectedFile);
   };
 
   const downloadSampleCSV = () => {
@@ -143,25 +206,25 @@ export default function BulkUpload() {
 
   return (
     <div className="page">
-      <div className="page-header">
-        <h1>Bulk Certificate Upload</h1>
-        <p>Upload a CSV file to generate certificates in bulk</p>
-      </div>
-
-      {/* Form Section */}
-      <div className="card">
-        <form onSubmit={handleUpload}>
-          {error && <div className="login-error">{error}</div>}
+      <div className="container-narrow">
+        <form className="card" onSubmit={handleUpload}>
+          <div className="card-header">
+            <h2>Bulk Certificate Upload</h2>
+            <p>Upload a CSV file to generate certificates in bulk</p>
+          </div>
 
           <div className="form-container">
+            {error && <div className="login-error">{error}</div>}
+
             <div className="input-group">
               <label>Template</label>
               <select
                 className="input"
                 value={templateId}
                 onChange={(e) => setTemplateId(e.target.value)}
+                required
               >
-                <option value="">Select a template...</option>
+                <option value="">-- Select Template --</option>
                 {templates.map((t) => (
                   <option key={t.id} value={t.id}>
                     {t.name}
@@ -169,45 +232,41 @@ export default function BulkUpload() {
                 ))}
               </select>
             </div>
-            {/* CSV Section */}
-            
-              <div className="csv-header">
-                <h3>CSV Format</h3>
 
-                {templateId && fields.length > 0 && (
+            {templateId && (
+              <div className="csv-card">
+                <div className="csv-header">
+                  <h3>CSV Format</h3>
                   <button
                     type="button"
+                    className="btn btn-sm download-sample-btn"
                     onClick={downloadSampleCSV}
-                    className="btn btn-secondary download-sample-btn"
+                    disabled={fields.length === 0}
                   >
                     Download Sample CSV
                   </button>
-                )}
-              </div>
-
-              <p className="csv-description">
-                {templateId ? (
-                  fields.length > 0 ? (
+                </div>
+                <p className="csv-description">
+                  {fields.length > 0 ? (
                     <>
-                      Your CSV should have these columns:
-                      <strong> {fields.map((f) => f.label).join(", ")}</strong>
+                      Your CSV should have these columns:{" "}
+                      <strong>{fields.map((f) => f.label).join(", ")}</strong>
                     </>
                   ) : (
-                    "No dynamic fields found in this template."
-                  )
-                ) : (
-                  "Please select a template to see required CSV columns."
-                )}
-              </p>
+                    "Loading template fields..."
+                  )}
+                </p>
 
-              {templateId && fields.length > 0 && (
-                <pre className="csv-preview">
-                  {`${fields.map((f) => f.label).join(",")}\n${fields.map((f) => (f.label === "Completion Date" ? "2026-02-25" : `Sample ${f.label}`)).join(",")}`}
-                </pre>
-              )}
-            
+                {fields.length > 0 && (
+                  <pre className="csv-preview">
+                    {`${fields.map((f) => f.label).join(",")}\n${fields.map((f) => (f.label === "Completion Date" ? "2026-02-25" : `Sample ${f.label}`)).join(",")}`}
+                  </pre>
+                )}
+              </div>
+            )}
+
             <div
-              className="upload-area"
+              className={`upload-area ${error ? "error" : ""}`}
               onClick={() => fileRef.current?.click()}
             >
               <p>{file ? file.name : "Click to select CSV file"}</p>
@@ -218,7 +277,7 @@ export default function BulkUpload() {
               type="file"
               accept=".csv"
               hidden
-              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              onChange={handleFileChange}
             />
 
             {progress && (
@@ -246,52 +305,53 @@ export default function BulkUpload() {
             <button
               type="submit"
               className="btn btn-green btn-lg full-width"
-              disabled={loading}
+              disabled={loading || !!error || !file}
             >
               {loading ? "Processing..." : "Generate Bulk Certificates"}
             </button>
           </div>
         </form>
-      </div>
-      {/* Download Section */}
-      {result && (
-        <div className="card result-card">
-          <h3 className="result-message">{result.message}</h3>
 
-          <a
-            href={result.zip_download_url}
-            download
-            className="btn btn-download"
-          >
-            Download ZIP
-          </a>
+        {result && (
+          <div className="card result-card">
+            <h3 className="result-message">{result.message}</h3>
 
-          {result.certificates && (
-            <div className="table-container result-table-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th className="head-table-container">Student</th>
-                    <th className="head-table-container">Course</th>
-                    <th className="head-table-container">Verification Code</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {result.certificates.map((cert: any) => (
-                    <tr key={cert.id}>
-                      <td>{cert.student_name}</td>
-                      <td>{cert.course_name}</td>
-                      <td className="verification-code">
-                        {cert.verification_code}
-                      </td>
+            <a
+              href={result.zip_download_url}
+              download
+              className="btn btn-download"
+              style={{ display: "inline-block", marginBottom: "20px" }}
+            >
+              Download ZIP
+            </a>
+
+            {result.certificates && result.certificates.length > 0 && (
+              <div className="table-container result-table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th className="head-table-container">Student</th>
+                      <th className="head-table-container">Course</th>
+                      <th className="head-table-container">Verification Code</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      )}
+                  </thead>
+                  <tbody>
+                    {result.certificates.map((cert: any) => (
+                      <tr key={cert.id}>
+                        <td>{cert.student_name}</td>
+                        <td>{cert.course_name}</td>
+                        <td className="verification-code">
+                          {cert.verification_code}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

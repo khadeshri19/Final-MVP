@@ -138,20 +138,29 @@ export async function generateCertificatePdf(
     height: pdfHeight,
   });
 
-  // Embed all fonts we might need
+  // Embed all fonts we might need (including bold+italic variants)
   const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const helveticaOblique = await pdfDoc.embedFont(
     StandardFonts.HelveticaOblique,
+  );
+  const helveticaBoldOblique = await pdfDoc.embedFont(
+    StandardFonts.HelveticaBoldOblique,
   );
   const timesRoman = await pdfDoc.embedFont(StandardFonts.TimesRoman);
   const timesRomanBold = await pdfDoc.embedFont(StandardFonts.TimesRomanBold);
   const timesRomanItalic = await pdfDoc.embedFont(
     StandardFonts.TimesRomanItalic,
   );
+  const timesRomanBoldItalic = await pdfDoc.embedFont(
+    StandardFonts.TimesRomanBoldItalic,
+  );
   const courier = await pdfDoc.embedFont(StandardFonts.Courier);
   const courierBold = await pdfDoc.embedFont(StandardFonts.CourierBold);
   const courierOblique = await pdfDoc.embedFont(StandardFonts.CourierOblique);
+  const courierBoldOblique = await pdfDoc.embedFont(
+    StandardFonts.CourierBoldOblique,
+  );
 
   const fontMap: Record<
     string,
@@ -159,19 +168,33 @@ export async function generateCertificatePdf(
       regular: typeof helvetica;
       bold: typeof helveticaBold;
       italic: typeof helveticaOblique;
+      boldItalic: typeof helveticaBoldOblique;
     }
   > = {
     Helvetica: {
       regular: helvetica,
       bold: helveticaBold,
       italic: helveticaOblique,
+      boldItalic: helveticaBoldOblique,
     },
     TimesRoman: {
       regular: timesRoman,
       bold: timesRomanBold,
       italic: timesRomanItalic,
+      boldItalic: timesRomanBoldItalic,
     },
-    Courier: { regular: courier, bold: courierBold, italic: courierOblique },
+    "Times-Roman": {
+      regular: timesRoman,
+      bold: timesRomanBold,
+      italic: timesRomanItalic,
+      boldItalic: timesRomanBoldItalic,
+    },
+    Courier: {
+      regular: courier,
+      bold: courierBold,
+      italic: courierOblique,
+      boldItalic: courierBoldOblique,
+    },
   };
 
   const canvasWidth =
@@ -213,9 +236,8 @@ export async function generateCertificatePdf(
     let font = fontEntry.regular;
 
     if (field.is_bold && field.is_italic) {
-      // pdf-lib doesn't support bold+italic built-in
-      // so we fallback to bold
-      font = fontEntry.bold;
+      // Use the proper Bold+Italic (BoldOblique) variant
+      font = fontEntry.boldItalic;
     } else if (field.is_bold) {
       font = fontEntry.bold;
     } else if (field.is_italic) {
